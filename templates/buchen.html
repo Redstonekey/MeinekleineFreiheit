@@ -1,0 +1,173 @@
+    <!DOCTYPE html>
+    <html lang="de">
+    <title> Buchen</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <header>
+
+        <div class="header">
+            <a class="logo">Meine kleine Freiheit</a>
+            <div class="header-right">
+              <a href="/">Home</a>
+              <a class="active" href="#Buchen">Buchen</a>
+              <a href="/wohnmobile">Wohnmobile</a>
+            </div>
+          </div>
+    </header>
+
+
+
+        
+    <body style="background-color: rgb(109, 165, 230);"> <br>
+    <h1 class="all"> Kalender:<h3>
+    <br><br><br>
+
+    <form action="{{ url_for('submit') }}" method="POST"  class="buchen">
+      <h1 style="text-align: center;font-size: 10vw">Jetzt Buchen</h1>
+
+      <br>
+
+          <div class="kalender-up-div">
+            <div id="kalender"></div>
+          </div>
+        <br>
+      <input type="hidden" id="kalenderInput" name="kalenderInput">
+        
+      <label for="name">Name:</label>
+      <input type="text" id="name" name="name" required>
+      <br>
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" required>
+      <br>
+      <label for="telephone">Telephone:</label>
+      <input type="tel" id="telephone" name="telephone" required>
+      <br><br>
+
+        <select id="wohnmobil" name="wohnmobil" class="select">
+            <option id="0" value="0" {% if wohnmobil_id == '0' %}selected{% endif %}>Wähle das Wohnmobil aus:</option>
+            <option id="1" value="1" {% if wohnmobil_id == '1' %}selected{% endif %}>1</option>
+            <option id="2" value="2" {% if wohnmobil_id == '2' %}selected{% endif %}>2</option>
+            <option id="3" value="3" {% if wohnmobil_id == '3' %}selected{% endif %}>3</option>
+            <option id="4" value="Nach absprache (egal)" {% if wohnmobil_id == '4' %}selected{% endif %}>Nach absprache (egal)</option>
+        </select>
+        <a href="/wohnmobile" class="button">mehr über die Wohnmobile erfahren</a>
+        <br><br>
+        <button id="submitbutton" type="submit" class="button-form">Anfrage Absenden</button>
+
+
+
+      {% with messages = get_flashed_messages() %}
+          {% if messages %}
+              <ul style="list-style-type: none">
+                  {% for message in messages %}
+                      <li  style="list-style-type: none">{{ message }}</li>
+                  {% endfor %}
+              </ul>
+          {% endif %}
+      {% endwith %}
+      <a id="bestätigung"></a>  
+    </form>
+
+
+        <br>
+
+
+
+        <script>
+        function addbooking() {
+
+          document.getElementById("bestätigung").innerText = "Ihre Anfrage wurde Abgeschickt. Die Verabeitung kann bis zu 48 Stunden dauern";
+        }
+      </script>
+
+
+
+
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+            <script>
+
+                const priceRanges = [
+                    { start: "2024-09-20", end: "2024-09-25", price: "$100", color: "#e3f2fd" }, // Light blue
+                    { start: "2024-09-26", end: "2024-09-30", price: "$120", color: "#ffecb3" }, // Light yellow
+                    { start: "2024-10-01", end: "2024-10-05", price: "$90", color: "#c8e6c9" }   // Light green
+                    // Add more date ranges with prices and colors as needed
+                ];
+
+                // Helper function to check if a date falls within a range
+                function isDateInRange(date, start, end) {
+                    const dateObj = new Date(date);
+                    const startDate = new Date(start);
+                    const endDate = new Date(end);
+                    return dateObj >= startDate && dateObj <= endDate;
+                }
+
+                flatpickr("#kalender", {
+                    inline: true,
+                    showMonths: 2,
+                    mode: "range",  
+                    dateFormat: "d-m-y",
+                    minDate: "today",
+                    onChange: function(selectedDates, dateStr, instance) {
+                        document.getElementById('kalenderInput').value = dateStr;
+                    },
+                    onDayCreate: function(dObj, dStr, fp, dayElem) {
+                        const date = dayElem.dateObj.toISOString().split('T')[0]; 
+
+                        
+                        priceRanges.forEach(range => {
+                            if (isDateInRange(date, range.start, range.end)) {
+                                dayElem.classList.add('price-day'); 
+                                dayElem.style.backgroundColor = range.color; 
+                            }
+                        });
+                    }
+                });
+            </script>
+
+
+
+              
+        </script>
+
+
+
+
+
+    </body>
+    <br><br><br>
+        <style>
+            /* Tooltip for prices on hover */
+            .flatpickr-day.price-day[data-price]:hover::after {
+                content: attr(data-price);
+                position: absolute;
+                bottom: -28px;
+                left: 50%;
+                transform: translateX(-50%);
+                background-color: #333;
+                color: #fff;
+                padding: 5px;
+                border-radius: 5px;
+                white-space: nowrap;
+                font-size: 12px;
+                z-index: 10;
+            }
+
+            /* Styling for today’s date */
+            .flatpickr-day.today {
+                border: 2px solid #03a9f4;
+            }
+
+            /* Styling for selected day */
+            .flatpickr-day.selected {
+                background-color: #0288d1 !important;
+                color: white;
+            }
+
+        </style>
+
+    <footer>
+      <div>
+          <p class="klein">&copy; 2024 Meine kleine Freiheit. Alle Rechte vorbehalten.</p>
+      </div>
+    </footer>

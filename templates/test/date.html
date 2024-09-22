@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Kalender</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
+<body>
+    <h1>Datum auswählen und senden</h1>
+
+    <!-- Formular -->
+    <form action="/test/date-submit" method="POST">
+      <div class="kalender-up-div">
+        <div id="kalender"></div>
+      </div>
+  <input type="hidden" id="kalenderInput" name="kalenderInput">
+
+        <button type="submit">Absenden</button>
+    </form>
+
+    <!-- Flatpickr Script -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        flatpickr("#kalenderInput", {
+            dateFormat: "Y-m-d", // Format wie es an das Backend gesendet wird
+            inline: true,  // Kalender wird immer sichtbar angezeigt
+            mode: "range", // Das ist ein Bereichs-Kalender
+            minDate: "today",  // Verhindert Auswahl von Daten in der Vergangenheit
+        });
+    </script>
+</body>
+</html>

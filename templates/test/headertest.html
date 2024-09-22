@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+   
+   
+   
+</head>
+<body>
+    <header>
+        <div class="header">
+            <a class="logo">Meine kleine Freiheit</a>
+
+            <div class="header-right">
+                <a class="active" href="#home">Home</a>
+                <a href="/buchen.html">Buchen</a>
+                <a href="/Wohnmobile.html">Wohnmobile</a>
+            </div>
+            
+            
+            <div class="menu-mobile">
+                <a href="#" class="menu-mobile-list" id="navbar" >Home</a>
+                <a href="#" class="menu-mobile-list"  >buchen</a>
+                <a href="#" class="menu-mobile-list"  >Wohnmobile</a>     
+         </div>
+
+
+
+            <div class="menu-container">
+                <div class="menu-icon" onclick="show_nav(event)" ></div>
+                <div class="menu-icon" onclick="show_nav(event)" ></div>
+                <div class="menu-icon" onclick="show_nav(event)" ></div>
+            </div>
+
+
+        </div>
+
+        </div>
+    </header>
+</body>
+</html>
+   
+   
+
+   <style>
+    body {
+        margin: 0px;
+    }
+    .header {
+
+        overflow: hidden;
+        background-color: #f1f1f1;
+        padding: 20px 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header a {
+        color: black;
+        text-align: center;
+        padding: 12px;
+        text-decoration: none;
+        font-size: 18px;
+        line-height: 25px;
+        border-radius: 4px;
+       cursor: ;
+    }
+
+    .header a.logo {
+        font-size: 30px;
+        font-family: sans-serif;
+    }
+
+    .header a.active {
+        background-color: rgb(30, 144, 255);
+        color: white;
+    }
+
+    .header-right {
+        display: flex;
+        align-items: center;
+        font-family: sans-serif;
+    }
+
+
+    .menu-container{
+        display:none
+    }
+    .menu-icon {
+        background-color: black;
+        width: 0px;
+        height: 0px;
+        margin: 0;
+        display: none;
+    }
+    .menu-mobile{
+        display: none;
+
+    }
+
+    .menu-mobile-list{
+        display: none;
+        
+
+    }
+
+
+
+
+
+
+    @media (max-width: 600px) {
+        .header{
+            display: flex;
+          justify-content: space-between;
+        }
+        .header-right a {
+            display: none;
+        }
+        .menu-icon {
+            background-color: black;
+            width: 35px;
+            height: 5px;
+            margin: 4px 0;
+            display: block;
+            
+        }
+        .menu-container{
+            display: block;
+        }
+        .menu-mobile{
+            display: flex;
+        }
+        
+        
+
+    }
+
+
+    </style>
+    <script>
+    var liste = document.getElementById('navbar');
+
+// Klick-Event-Listener für das Dokument hinzufügen
+document.addEventListener('click', function(event) {
+    var target = event.target;
+    // Überprüfen, ob auf .test oder .liste geklickt wurde oder ein Kind davon
+    if (!target.matches('.test') && !target.matches('.liste') && !liste.contains(target)) {
+        // Klicken außerhalb von .test und .liste, also .liste verstecken
+        liste.style.display = 'none';
+    }
+});
+
+    function show_nav(event) {
+        event.stopPropagation(); // Stoppt die Event-Propagation, damit das Dokument nicht das Klick-Event abfängt
+        if (liste.style.display === 'block') {
+            liste.style.display = 'none'; // Verstecken, wenn bereits angezeigt
+        } else {
+            liste.style.display = 'block'; // Anzeigen, wenn versteckt
+        }
+    }
+</script>
+   

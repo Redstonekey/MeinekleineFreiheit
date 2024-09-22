@@ -1,0 +1,109 @@
+    <!DOCTYPE html>
+    <html lang="de">
+    <title>Bestandskunden</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <header>
+
+        <div class="header">
+            <a class="logo">Meine kleine Freiheit</a>
+            <div class="header-right">
+              <a href="/">Home</a>
+              <a class="active" href="#Buchen">Buchen</a>
+              <a href="/wohnmobile">Wohnmobile</a>
+            </div>
+          </div>
+    </header>
+
+
+
+        
+    <body style="background-color: rgb(109, 165, 230);"> <br>
+    <h1 class="all"> Kalender:<h3>
+        <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTcoc-mXXKeHE-GFft9Z2D1ZhBkezzKYJgKIojndq1RFicuJDKARprHPh3AP9QlVl7DbMF6ArJpRNwC/pubhtml?gid=1896075489&amp;single=true&amp;widget=true&amp;headers=false"></iframe>
+    <br><br><br>
+
+    <form action="{{ url_for('submit') }}" method="POST"  class="buchen">
+      <h1 style="text-align: center;font-size: 10vw"></h1>
+
+      <br>
+
+          <div class="kalender-up-div">
+            <div id="kalender"></div>
+          </div>
+        <br>
+      <input type="hidden" id="kalenderInput" name="kalenderInput">
+        
+      <label for="name">Name:</label>
+      <input type="text" id="name" name="name" required>
+      <br>
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" required>
+      <br>
+      <label for="telephone">Telephone:</label>
+      <input type="tel" id="telephone" name="telephone" required>
+      <br>
+      <button id="submitbutton" type="submit" class="button-form">Anfrage Absenden</button>
+      <br><br>
+        <a class="center small" href="/bestandskunden">Bestandskunden klicken bitte hier!</a>
+      {% with messages = get_flashed_messages() %}
+          {% if messages %}
+              <ul style="list-style-type: none">
+                  {% for message in messages %}
+                      <li  style="list-style-type: none">{{ message }}</li>
+                  {% endfor %}
+              </ul>
+          {% endif %}
+      {% endwith %}
+      <a id="bestätigung"></a>  
+    </form>
+
+
+        <br>
+
+
+
+        <script>
+        function addbooking() {
+
+          document.getElementById("bestätigung").innerText = "Ihre Anfrage wurde Abgeschickt. Die Verabeitung kann bis zu 48 Stunden dauern";
+        }
+      </script>
+
+
+
+
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+            <script>
+
+                flatpickr("#kalender", {
+                    inline: true,
+                    showMonths: 2,
+                    mode: "range",  
+                    dateFormat: "d-m-y",
+                    minDate: "today",
+                    onChange: function(selectedDates, dateStr, instance) {
+                        document.getElementById('kalenderInput').value = dateStr;
+                    },
+                });
+            </script>
+
+
+
+              
+        </script>
+
+
+
+
+
+    </body>
+    <br><br><br>
+
+
+    <footer>
+      <div>
+          <p class="klein">&copy; 2024 Meine kleine Freiheit. Alle Rechte vorbehalten.</p>
+      </div>
+    </footer>

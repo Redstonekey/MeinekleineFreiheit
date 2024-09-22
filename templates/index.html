@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <title>Meine kleine Freiheit - Buchen</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body style="background-color: rgb(109, 165, 230);">
+<header>
+    <div class="header">
+        <a class="logo">Meine kleine Freiheit</a>
+        <div class="header-right">
+            <a class="active" href="#home">Home</a>
+            <a href="/buchen">Buchen</a>
+            <a href="/wohnmobile">Wohnmobile</a>
+        </div>
+    </div>
+</header>
+<div class="bild_container">
+    <img class="bild" src="/static/Bilder/Home/background.jpg">
+    <div class="background-blend"></div>
+    <div class="text-overlay" style="font-size: 11vw; font-weight: bold;">Meine kleine Freiheit</div>
+
+
+</div>
+<br><br><br><br>
+<div id="slideshow" class="bild_box" style="text-align: center;">
+<img class="border" src="/static/Bilder/slideshow/Test_bild.jpg" height="auto" width="80%">
+</div>
+<br>
+<a href="/buchen">
+    <button class="center" style="border: 2px solid black; border-radius: 4px; background-color: rgb(109, 165, 230); font-size: 20px;">Jetzt buchen!</button>
+</a>
+
+<script>
+    // Array mit den Bild-Dateipfaden
+    var bilder = ["/static/Bilder/slideshow/Test_bild2.jpg", "/static/Bilder/slideshow/Test_bild.jpg"];
+  
+    var index = 0; // Aktueller Index im Array
+  
+    function wechsleBild() {
+      document.getElementById("slideshow").innerHTML = '<img src="' + bilder[index] + '" alt="Bild ' + (index + 1) + '">';
+      index = (index + 1) % bilder.length;
+    }
+
+    setInterval(wechsleBild, 3000);
+</script>
+<br>
+<footer> 
+  <div>
+    <p class="all">&copy; 2024 Meine kleine Freiheit. Alle Rechte vorbehalten.</p>
+  </div>
+</footer> 
+</body>
+</html>

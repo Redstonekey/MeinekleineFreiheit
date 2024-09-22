@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <title>Wohnmobile - Meine kleine Freiheit</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        body {
+            background-color: rgb(109, 165, 230);
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .slideshow-container {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slide {
+            display: none;
+        }
+
+        .slide img {
+            width: 80%;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        .close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .prev, .next {
+            cursor: pointer;
+            position: absolute;
+            top: 50%;
+            width: auto;
+            padding: 16px;
+            color: white;
+            font-weight: bold;
+            font-size: 30px;
+            transition: 0.6s ease;
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.6);
+            user-select: none;
+            margin-top: -22px; /* Center the buttons vertically */
+        }
+
+        .next {
+            right: 30px;
+        }
+
+        .prev {
+            left: 30px;
+        }
+
+        .wohnmobile-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            padding: 20px;
+        }
+
+        .wohnmobil {
+            width: 30%;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+            transition: transform 0.2s;
+        }
+
+        .wohnmobil:hover {
+            transform: scale(1.03);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .button-form {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: rgb(30, 144, 255);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .button-form:hover {
+            background-color: rgb(20, 120, 230);
+        }
+
+        .slide img {
+            width: 100%; /* Breite auf 100% setzen */
+            height: 500px; /* Feste Höhe für alle Bilder */
+            object-fit: cover; /* Zuschneiden, um das Seitenverhältnis zu bewahren */
+            border-radius: 10px;
+        }
+
+        .wohnmobile_bild {
+            width: 100%; /* Breite auf 100% setzen */
+            height: 250px; /* Feste Höhe für alle Bilder */
+            object-fit: cover; /* Zuschneiden, um das Seitenverhältnis zu bewahren */
+            border: 3px solid rgba(0, 0, 0, 0.744);
+            border-radius: 10px;
+        }
+
+        .überschrift {
+            text-align: center;
+            margin: 20px 0;
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="header">
+        <a class="logo">Meine kleine Freiheit</a>
+        <div class="header-right">
+            <a href="/">Home</a>
+            <a href="/buchen">Buchen</a>
+            <a class="active" href="/wohnmobile">Wohnmobile</a>
+        </div>
+    </div>
+</header>
+
+<main>
+    <!-- Wohnmobile Sektion -->
+    <section class="wohnmobile-section">
+        <h1 class="überschrift">Unsere Wohnmobile</h1>
+        <div class="wohnmobile-container">
+            <div class="wohnmobil">
+                <img src="/static/Bilder/bilderstock/th (3).png" alt="Wohnmobil 1" class="wohnmobile_bild" onclick="openSlideshow(0)">
+                <h2>Wohnmobil A</h2>
+                <p>Maximale Personen: 4</p>
+                <p>Preis pro Nacht: 100€</p>
+                <a href="/buchen?wohnmobil=1" class="button-form">Jetzt buchen</a>
+            </div>
+
+            <div class="wohnmobil">
+                <img src="/static/Bilder/bilderstock/th (4).png" alt="Wohnmobil 2" class="wohnmobile_bild" onclick="openSlideshow(1)">
+                <h2>Wohnmobil B</h2>
+                <p>Maximale Personen: 6</p>
+                <p>Preis pro Nacht: 120€</p>
+                <a href="/buchen?wohnmobil=2" class="button-form">Jetzt buchen</a>
+            </div>
+
+            <div class="wohnmobil">
+                <img src="/static/Bilder/bilderstock/th (5).png" alt="Wohnmobil 3" class="wohnmobile_bild" onclick="openSlideshow(2)">
+                <h2>Wohnmobil C</h2>
+                <p>Maximale Personen: 5</p>
+                <p>Preis pro Nacht: 90€</p>
+                <a href="/buchen?wohnmobil=3" class="button-form">Jetzt buchen</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slideshow Sektion -->
+    <div class="slideshow-container" id="slideshow">
+        <span class="close" onclick="closeSlideshow()">&times;</span>
+        <div class="slide">
+            <img src="/static/Bilder/bilderstock/th (3).png" alt="Wohnmobil 1">
+        </div>
+        <div class="slide">
+            <img src="/static/Bilder/bilderstock/th (4).png" alt="Wohnmobil 2">
+        </div>
+        <div class="slide">
+            <img src="/static/Bilder/bilderstock/th (5).png" alt="Wohnmobil 3">
+        </div>
+        <a class="prev" onclick="changeSlide(-1)">&#10094;</a>
+        <a class="next" onclick="changeSlide(1)">&#10095;</a>
+    </div>
+</main>
+
+<footer>
+    <p class="klein">&copy; 2024 Meine kleine Freiheit. Alle Rechte vorbehalten.</p>
+</footer>
+
+<script>
+    let slideIndex = 0;
+
+    function openSlideshow(index) {
+        slideIndex = index;
+        showSlides();
+        document.getElementById("slideshow").style.display = "flex";
+    }
+
+    function closeSlideshow() {
+        document.getElementById("slideshow").style.display = "none";
+    }
+
+    function showSlides() {
+        const slides = document.getElementsByClassName("slide");
+        for (let i = 0; i < slides.length; i++) {
+            slides[i].style.display = "none";
+        }
+        slides[slideIndex].style.display = "block";
+    }
+
+    function changeSlide(n) {
+        slideIndex += n;
+        const slides = document.getElementsByClassName("slide");
+        if (slideIndex < 0) { slideIndex = slides.length - 1; }
+        if (slideIndex >= slides.length) { slideIndex = 0; }
+        showSlides();
+    }
+</script>
+
+</body>
+</html>

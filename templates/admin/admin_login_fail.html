@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Login</title>
+</head>
+<body id="loginForm">
+    <form action="{{ url_for('admin') }}" method="POST" id="login_form">
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <br>
+        <button type="submit">Login</button>
+    </form>
+    <div>
+        Error falsches Passwort
+    </div>
+    <script>
+        document.getElementById('password').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent the default action
+                document.getElementById('login_form').submit(); // Submit the form
+            }
+        });
+    </script>
+</body>
+</html>
+
