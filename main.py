@@ -48,7 +48,7 @@ def confirm_token(token, expiration=3600):
 
 def send_email(receiver_email, subject, message_body):
     sender_email = 'manfred-eckl@web.de'
-    sender_password = password_email  # Dein tatsächliches Passwort
+    sender_password = password_email 
 
     # E-Mail-Inhalt erstellen
     msg = MIMEMultipart()
