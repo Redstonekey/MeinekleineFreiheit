@@ -102,6 +102,7 @@ def init_db():
             von1 TEXT NOT NULL,
             bis1 TEXT NOT NULL,
             telephone TEXT NOT NULL,
+            wohnmobil TEXT,
             iban TEXT,
             status TEXT NOT NULL
         )
@@ -140,7 +141,12 @@ def submit():
     telephone = request.form['telephone']
     email = email_noformat.lower()
     date = request.form['kalenderInput']
+    wohnmobil = request.form['wohnmobil']
 
+    if wohnmobil == "0":
+        flash('bitte wohnmobil angeben oder "egal" auswählen')
+        return redirect(url_for('buchen'))
+        
     if date == "":
         flash('Bitte geben Sie eine gültige Datum ein.')
         return redirect(url_for('buchen'))
@@ -170,10 +176,11 @@ def submit():
             von1,
             bis1,
             telephone,
+            wohnmobil,
             status
         
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)""",
-        ((name, email, date, von1, bis1, telephone, 'unbestätigt')))
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+        ((name, email, date, von1, bis1, telephone, wohnmobil, status)))
     conn.commit()
     conn.close()
 
