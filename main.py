@@ -142,6 +142,7 @@ def submit():
     email = email_noformat.lower()
     date = request.form['kalenderInput']
     wohnmobil = request.form['wohnmobil']
+    preis = request.form['preis']
 
     if wohnmobil == "0":
         flash('bitte wohnmobil angeben oder "egal" auswählen')

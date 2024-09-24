@@ -31,6 +31,9 @@
             <div id="kalender"></div>
           </div>
         <br>
+        <br><br>
+        <label for="preis">Gesamtpreis:</label>
+        <input type="text" id="preis" name="preis" readonly>
       <input type="hidden" id="kalenderInput" name="kalenderInput">
         
       <label for="name">Name:</label>
@@ -50,8 +53,11 @@
             <option id="3" value="3" {% if wohnmobil_id == '3' %}selected{% endif %}>3</option>
             <option id="4" value="Nach absprache (egal)" {% if wohnmobil_id == '4' %}selected{% endif %}>Nach absprache (egal)</option>
         </select>
+        
         <a href="/wohnmobile" class="button">mehr über die Wohnmobile erfahren</a>
+
         <br><br>
+        
         <button id="submitbutton" type="submit" class="button-form">Anfrage Absenden</button>
 
 
@@ -84,57 +90,89 @@
 
 
         <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+        <script>
+            const priceRanges = [
+                //tag +1 
+                { start: "2024-09-25", end: "2024-09-25", price: 100, color: "#e3f2fd" },//blau
+                { start: "2024-09-27", end: "2024-09-27", price: 120, color: "#ffecb3" },//gelb
+                { start: "2024-09-30", end: "2024-09-30", price: 140, color: "#c8e6c9" },//grün
+            ];
 
-            <script>
+            const wohnmobilPrices = {
+                1: 1.0,  // Price multiplier for Wohnmobil 1
+                2: 1.2,  // Price multiplier for Wohnmobil 2
+                3: 1.5,  // Price multiplier for Wohnmobil 3
+                4: 1.1   // Price multiplier for Wohnmobil "Nach Absprache"
+            };
 
-                const priceRanges = [
-                    { start: "2024-09-20", end: "2024-09-25", price: "$100", color: "#e3f2fd" }, // Light blue
-                    { start: "2024-09-26", end: "2024-09-30", price: "$120", color: "#ffecb3" }, // Light yellow
-                    { start: "2024-10-01", end: "2024-10-05", price: "$90", color: "#c8e6c9" }   // Light green
-                    // Add more date ranges with prices and colors as needed
-                ];
+            // Helper function to check if a date falls within a range
+            function isDateInRange(date, start, end) {
+                const dateObj = new Date(date);
+                const startDate = new Date(start);
+                const endDate = new Date(end);
+                return dateObj >= startDate && dateObj <= endDate;
+            }
 
-                // Helper function to check if a date falls within a range
-                function isDateInRange(date, start, end) {
-                    const dateObj = new Date(date);
-                    const startDate = new Date(start);
-                    const endDate = new Date(end);
-                    return dateObj >= startDate && dateObj <= endDate;
+            // Function to calculate price based on selected dates
+            function calculatePrice(startDate, endDate) {
+                let totalPrice = 0;
+
+                // Create a date iterator to loop over each day in the range
+                let currentDate = new Date(startDate);
+                while (currentDate <= endDate) {
+                    const dateString = currentDate.toISOString().split('T')[0];
+
+                    // Find the price for the current date
+                    priceRanges.forEach(range => {
+                        if (isDateInRange(dateString, range.start, range.end)) {
+                            totalPrice += range.price;
+                        }
+                    });
+
+                    // Move to the next day
+                    currentDate.setDate(currentDate.getDate() + 1);
                 }
 
-                flatpickr("#kalender", {
-                    inline: true,
-                    showMonths: 2,
-                    mode: "range",  
-                    dateFormat: "d-m-y",
-                    minDate: "today",
-                    onChange: function(selectedDates, dateStr, instance) {
+                const wohnmobilId = document.getElementById("wohnmobil").value;
+                const wohnmobilMultiplier = wohnmobilPrices[wohnmobilId] || 1.0;
+
+                // Return total price adjusted for selected wohnmobil
+                return totalPrice * wohnmobilMultiplier;
+            }
+
+            // Flatpickr initialization with price calculation
+            flatpickr("#kalender", {
+                inline: true,
+                showMonths: 2,
+                mode: "range",
+                dateFormat: "Y-m-d",
+                minDate: "today",
+                onChange: function(selectedDates, dateStr, instance) {
+                    // Ensure both start and end date are selected
+                    if (selectedDates.length === 2) {
+                        const startDate = selectedDates[0];
+                        const endDate = selectedDates[1];
+
+                        // Calculate total price for the date range
+                        const totalPrice = calculatePrice(startDate, endDate);
                         document.getElementById('kalenderInput').value = dateStr;
-                    },
-                    onDayCreate: function(dObj, dStr, fp, dayElem) {
-                        const date = dayElem.dateObj.toISOString().split('T')[0]; 
 
-                        
-                        priceRanges.forEach(range => {
-                            if (isDateInRange(date, range.start, range.end)) {
-                                dayElem.classList.add('price-day'); 
-                                dayElem.style.backgroundColor = range.color; 
-                            }
-                        });
+                        // Füge den Gesamtpreis in das Input-Feld ein
+                        document.getElementById('preis').value = `€${totalPrice.toFixed(2)}`;
                     }
-                });
-            </script>
+                },
+                onDayCreate: function(dObj, dStr, fp, dayElem) {
+                    const date = dayElem.dateObj.toISOString().split('T')[0];
 
-
-
-              
+                    priceRanges.forEach(range => {
+                        if (isDateInRange(date, range.start, range.end)) {
+                            dayElem.classList.add('price-day');
+                            dayElem.style.backgroundColor = range.color;
+                        }
+                    });
+                }
+            });
         </script>
-
-
-
-
-
-    </body>
     <br><br><br>
         <style>
             /* Tooltip for prices on hover */
