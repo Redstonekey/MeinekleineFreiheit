@@ -11,7 +11,7 @@ from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadTimeSignature
 
 app = Flask(__name__)
-
+#test
 # Logger konfigurieren
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

@@ -1,3 +1,23 @@
+# database
+data.db
+#log
+admin_login.log
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
