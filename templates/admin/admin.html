@@ -6,7 +6,7 @@
 </head>
 <body style="text-align: center;">
     <h1>Buchungs Anfragen:</h1>
-    <table  border="1" >
+    <table  border="1">
         <tr>
             <th>ID</th>
             <th>Name</th>
@@ -15,8 +15,9 @@
             <th>Bis</th>
             <th>Telephone</th>
             <th>Wohnmobil</th>
-            <th>iban</th>
-            <th>status</th>
+            <th>IBAN</th>
+            <th>Status</th>
+            <th>Löschen</th> <!-- Neue Spalte für das Löschen -->
         </tr>
         {% for user in users %}
         <tr>
@@ -28,18 +29,25 @@
             <td>{{ user[8] }}</td>
             <td>{{ user[9] }}</td>
             <td>{{ user[10] }}</td>
-            <td>{{ user[10] }}</td>
+            <td>{{ user[11] }}</td>
+            <td>
+                <form action="{{ url_for('delete_user') }}" method="POST">
+                    <input type="hidden" name="user_id" value="{{ user[0] }}">
+                    <button type="submit">Löschen</button>
+                </form>
+            </td>
         </tr>
         {% endfor %}
     </table>
     <br><br>
-    <ul  style="list-style-type: none">
+    <ul style="list-style-type: none">
         {% for log in logs %}
             <li>{{ log }}</li>
         {% endfor %}
     </ul>
 </body>
 </html>
+
 
 <style>
     body {

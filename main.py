@@ -5,13 +5,12 @@ import sqlite3
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+
 import pytz
-from flask import Flask, flash, redirect, render_template, request, url_for
-from flask_mail import Mail, Message
-from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadTimeSignature
+from flask import Flask, flash, redirect, render_template, request, send_file, url_for
+from itsdangerous import BadTimeSignature, SignatureExpired, URLSafeTimedSerializer
 
 app = Flask(__name__)
-#test
 # Logger konfigurieren
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -372,6 +371,29 @@ def admin():
 
             return render_template('admin/admin_login_fail.html')
     return render_template('admin/admin_login.html')
+
+
+@app.route('/delete_user', methods=['POST'])
+def delete_user():
+    user_id = request.form['user_id']  # ID aus dem Formular bekommen
+
+    conn = sqlite3.connect('data.db')
+    c = conn.cursor()
+
+    # Benutzer aus der Datenbank löschen
+    c.execute("DELETE FROM users WHERE id = ?", (user_id,))
+    conn.commit()
+    conn.close()
+
+    flash(f'Benutzer mit ID {user_id} wurde erfolgreich gelöscht.')
+    return redirect(url_for('admin'))  # Zurück zum Admin-Panel
+
+
+@app.route('/download')
+def download_file():
+    path = "path/to/your/file.txt"
+    return send_file(path, as_attachment=True)
+
 
 
 if __name__ == '__main__':
