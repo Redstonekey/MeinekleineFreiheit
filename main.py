@@ -389,10 +389,32 @@ def delete_user():
     return redirect(url_for('admin'))  # Zurück zum Admin-Panel
 
 
-@app.route('/download')
-def download_file():
-    path = "path/to/your/file.txt"
-    return send_file(path, as_attachment=True)
+@app.route('/download/admin_log', methods=['POST', 'GET'])
+def download_file_admin_log():
+    if request.method == 'POST':
+        password = request.form['password']
+        if password == 'test':  # Simple password check
+            path = "admin_login.log"
+            return send_file(path, as_attachment=True)
+        else:
+            return render_template(
+                'admin/download_login_fail.html', route='download_file_admin_log')
+
+    return render_template('admin/download_login.html', route='download_file_admin_log')
+
+
+@app.route('/download/data_base', methods=['POST', 'GET'])
+def download_file_data_base():
+    if request.method == 'POST':
+        password = request.form['password']
+        if password == 'test':  # Simple password check
+            path = "data.db"
+            return send_file(path, as_attachment=True)
+        else:
+            return render_template(
+                'admin/download_login_fail.html', route='download_file_data_base')
+
+    return render_template('admin/download_login.html', route='download_file_data_base')
 
 
 
