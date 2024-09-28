@@ -64,6 +64,7 @@
             <th>Wohnmobil</th>
             <th>IBAN</th>
             <th>Status</th>
+            <th>Preis</th>
             <th>Status ändern</th>
             <th>Löschen</th>
         </tr>
@@ -76,8 +77,10 @@
             <td>{{ user[7] }}</td> <!-- Bis Datum -->
             <td>{{ user[8] }}</td> <!-- Telefon -->
             <td>{{ user[9] }}</td> <!-- Wohnmobil -->
-            <td>{{ user[10] }}</td> <!-- IBAN -->
-            <td>{{ user[11] }}</td> <!-- Status -->
+                                    
+            <td>{{ user[11] }}</td> <!-- IBAN -->
+            <td>{{ user[12] }}</td><!-- Status -->
+            <td>{{ user[10] }}</td><!-- Preis -->
             <td>
                 <form action="{{ url_for('change_status') }}" method="POST">
                     <input type="hidden" name="user_id" value="{{ user[0] }}">

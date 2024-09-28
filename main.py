@@ -70,12 +70,11 @@ def send_email(receiver_email, subject, message_body):
         server.sendmail(sender_email, receiver_email, text)
         print("E-Mail erfolgreich gesendet!")
         logger.info(f"Sending email to {receiver_email}")
+        server.quit()
 
     except Exception as e:
         print(f"Fehler beim Senden der E-Mail: {e}")
 
-    finally:
-        server.quit()  # Verbindung zum Server schließen
 
 
 
@@ -102,6 +101,7 @@ def init_db():
             bis1 TEXT NOT NULL,
             telephone TEXT NOT NULL,
             wohnmobil TEXT,
+            preis TEXT,
             iban TEXT,
             status TEXT NOT NULL
         )
@@ -155,13 +155,6 @@ def submit():
     von1, bis1 = date.split(" to ")
 
     print("\033[1m" + "\033[31m" + date + "\033[0m" + "\033[0m")
-    if date == '':
-        return print('no date')
-
-    if name == "bennet":
-        flash("Hallo Bennet, schön, dass du da bist!")
-    if name == "Bennet":
-        flash("Hallo Bennet, schön, dass du da bist!")
 
     # Überprüfen, ob der Benutzer bereits in der Datenbank ist
 
@@ -178,10 +171,11 @@ def submit():
             bis1,
             telephone,
             wohnmobil,
+            preis,
             status
         
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-        ((name, email, date, von1, bis1, telephone, wohnmobil, status)))
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        ((name, email, date, von1, bis1, telephone, wohnmobil, preis, status)))
     conn.commit()
     conn.close()
 
@@ -410,7 +404,6 @@ def delete_user():
     conn.commit()
     conn.close()
 
-    flash(f'Benutzer mit ID {user_id} wurde erfolgreich gelöscht.')
     return redirect(url_for('admin'))  # Zurück zum Admin-Panel
 
 
