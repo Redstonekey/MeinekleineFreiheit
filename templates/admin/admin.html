@@ -1,35 +1,95 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel</title>
+    <style>
+        body {
+            background-color: #f5f5f5;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        select {
+            padding: 5px;
+            font-size: 14px;
+        }
+        button {
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
-<body style="text-align: center;">
-    <h1>Buchungs Anfragen:</h1>
-    <table  border="1">
+<body>
+    <h1>Buchungs Anfragen</h1>
+    <table>
         <tr>
             <th>ID</th>
             <th>Name</th>
             <th>Email</th>
             <th>Von</th>
             <th>Bis</th>
-            <th>Telephone</th>
+            <th>Telefon</th>
             <th>Wohnmobil</th>
             <th>IBAN</th>
             <th>Status</th>
-            <th>Löschen</th> <!-- Neue Spalte für das Löschen -->
+            <th>Status ändern</th>
+            <th>Löschen</th>
         </tr>
         {% for user in users %}
         <tr>
-            <td>{{ user[0] }}</td>
-            <td>{{ user[1] }}</td>
-            <td>{{ user[2] }}</td>
-            <td>{{ user[6] }}</td>
-            <td>{{ user[7] }}</td>
-            <td>{{ user[8] }}</td>
-            <td>{{ user[9] }}</td>
-            <td>{{ user[10] }}</td>
-            <td>{{ user[11] }}</td>
+            <td>{{ user[0] }}</td> <!-- ID -->
+            <td>{{ user[1] }}</td> <!-- Name -->
+            <td>{{ user[2] }}</td> <!-- Email -->
+            <td>{{ user[6] }}</td> <!-- Von Datum -->
+            <td>{{ user[7] }}</td> <!-- Bis Datum -->
+            <td>{{ user[8] }}</td> <!-- Telefon -->
+            <td>{{ user[9] }}</td> <!-- Wohnmobil -->
+            <td>{{ user[10] }}</td> <!-- IBAN -->
+            <td>{{ user[11] }}</td> <!-- Status -->
+            <td>
+                <form action="{{ url_for('change_status') }}" method="POST">
+                    <input type="hidden" name="user_id" value="{{ user[0] }}">
+                    <select name="status">
+                        <option value="abgesendet" {% if user[11] == 'abgesendet' %}selected{% endif %}>Abgesendet</option>
+                        <option value="bestätigt" {% if user[11] == 'bestätigt' %}selected{% endif %}>Bestätigt</option>
+                        <option value="bezahlt" {% if user[11] == 'bezahlt' %}selected{% endif %}>Bezahlt</option>
+                        <option value="storniert" {% if user[11] == 'storniert' %}selected{% endif %}>Storniert</option>
+                    </select>
+                    <button type="submit">Ändern</button>
+                </form>
+            </td>
             <td>
                 <form action="{{ url_for('delete_user') }}" method="POST">
                     <input type="hidden" name="user_id" value="{{ user[0] }}">
@@ -39,45 +99,12 @@
         </tr>
         {% endfor %}
     </table>
+
     <br><br>
-    <ul style="list-style-type: none">
+    <!-- <ul style="list-style-type: none">
         {% for log in logs %}
             <li>{{ log }}</li>
         {% endfor %}
-    </ul>
+    </ul> -->
 </body>
 </html>
-
-
-<style>
-    body {
-        background-color: #f5f5f5;
-        font-family: Arial, sans-serif;
-        padding: 20px;
-    }
-    h1 {
-        text-align: center;
-        color: #333;
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 20px 0;
-    }
-    table, th, td {
-        border: 1px solid #ddd;
-    }
-    th, td {
-        padding: 12px;
-        text-align: left;
-    }
-    th {
-        background-color: #f4f4f4;
-    }
-    tr:nth-child(even) {
-        background-color: #f9f9f9;
-    }
-    tr:hover {
-        background-color: #f1f1f1;
-    }
-</style>

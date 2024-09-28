@@ -110,6 +110,7 @@ def init_db():
         conn.close()
 
 
+
 @app.route('/test/date-submit', methods=['POST', 'GET'])
 def test_date_submit():
     print("\033[1m" + "\033[31m" + "submit startet" + "\033[0m" + "\033[0m")
@@ -223,7 +224,14 @@ def confirm_email(token):
         c.execute("SELECT * FROM users WHERE email = ?", (email,))
         data_user = c.fetchone()
         # Daten aus der Datenbank extrahieren
-        user_id, name, email, von, bis, date, von1, bis1, telephone, iban, status = data_user
+        user_id, name, email, von, bis, date, von1, bis1, telephone, wohnmobil, iban, status = data_user
+        status = 'email bestätigt'
+        c.execute(
+            """INSERT INTO users (
+                status
+            ) VALUES (?)""",
+            ((status)))
+        conn.commit()
 
         # Aktuelles Jahr für die E-Mail erstellen
         current_year = datetime.now().year
@@ -332,6 +340,23 @@ def auth_bank_submit():
         return redirect(url_for('auth_bank'))
 
 
+
+@app.route('/change_status', methods=['POST'])
+def change_status():
+    user_id = request.form['user_id']
+    new_status = request.form['status']
+
+    # Connect to the database and update the user's status
+    conn = sqlite3.connect('data.db')
+    c = conn.cursor()
+    c.execute("UPDATE users SET status = ? WHERE id = ?", (new_status, user_id))
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for('admin'))
+
+
+
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
     if request.method == 'POST':
@@ -339,7 +364,7 @@ def admin():
         if password == 'test':  # Simple password check
             conn = sqlite3.connect('data.db')
             c = conn.cursor()
-            c.execute("SELECT * FROM users")
+            c.execute("SELECT * FROM users ORDER BY status")
             users = c.fetchall()
             conn.close()
 
