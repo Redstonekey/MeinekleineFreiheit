@@ -2,15 +2,26 @@ import logging
 import os
 import smtplib
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 import pytz
-from flask import Flask, flash, redirect, render_template, request, send_file, url_for
+from flask import (
+    Flask,
+    flash,
+    redirect,
+    render_template,
+    request,
+    send_file,
+    session,
+    url_for,
+)
 from itsdangerous import BadTimeSignature, SignatureExpired, URLSafeTimedSerializer
 
 app = Flask(__name__)
+
+app.permanent_session_lifetime = timedelta(minutes=120)  
 # Logger konfigurieren
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -337,25 +348,57 @@ def auth_bank_submit():
 
 @app.route('/change_status', methods=['POST'])
 def change_status():
-    user_id = request.form['user_id']
-    new_status = request.form['status']
+    if 'admin' in session:
+        user_id = request.form['user_id']
+        new_status = request.form['status']
+    
+        # Connect to the database and update the user's status
+        conn = sqlite3.connect('data.db')
+        c = conn.cursor()
+        c.execute("UPDATE users SET status = ? WHERE id = ?", (new_status, user_id))
+        conn.commit()
+        conn.close()
+    
+        return redirect(url_for('admin'))
+    else:
+        return redirect(url_for('admin'))
 
-    # Connect to the database and update the user's status
-    conn = sqlite3.connect('data.db')
-    c = conn.cursor()
-    c.execute("UPDATE users SET status = ? WHERE id = ?", (new_status, user_id))
-    conn.commit()
-    conn.close()
 
+@app.route('/logout')
+def logout():
+    session.pop('admin', None)  # Admin-Status aus der Session entfernen
     return redirect(url_for('admin'))
-
 
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
+    # Prüfe, ob der Benutzer bereits authentifiziert ist
+    if 'admin' in session:
+        conn = sqlite3.connect('data.db')
+        c = conn.cursor()
+        c.execute("SELECT * FROM users ORDER BY status")
+        users = c.fetchall()
+        conn.close()
+
+        # Log-Datei einlesen
+        with open('admin_login.log', 'r') as file:
+            logs = file.readlines()
+
+        # Definiere die Mitteleuropäische Zeitzone
+        me_zone = pytz.timezone('Europe/Berlin')
+
+        # Holen Sie sich die aktuelle Zeit in dieser Zeitzone
+        me_time = datetime.now(me_zone)
+
+        # Logge die Zeit
+        logger.info('%s admin logged in',
+                    me_time.strftime('%Y-%m-%d %H:%M:%S'))
+        return render_template('admin/admin.html', users=users, logs=logs)
+
     if request.method == 'POST':
         password = request.form['password']
-        if password == 'test':  # Simple password check
+        if password == 'test':  # Einfacher Passwortcheck
+            session['admin'] = True  # Setze Admin-Status in der Session
             conn = sqlite3.connect('data.db')
             c = conn.cursor()
             c.execute("SELECT * FROM users ORDER BY status")
@@ -377,62 +420,52 @@ def admin():
                         me_time.strftime('%Y-%m-%d %H:%M:%S'))
             return render_template('admin/admin.html', users=users, logs=logs)
         else:
-            # Definiere die Mitteleuropäische Zeitzone
             me_zone = pytz.timezone('Europe/Berlin')
 
             # Holen Sie sich die aktuelle Zeit in dieser Zeitzone
             me_time = datetime.now(me_zone)
-
-            ip_addr = request.environ['REMOTE_ADDR']
             # Logge die Zeit
             logger.info('%s admin failed to login',
                         me_time.strftime('%Y-%m-%d %H:%M:%S'))
 
             return render_template('admin/admin_login_fail.html')
-    return render_template('admin/admin_login.html')
+
+    return render_template('/admin/admin_login.html')  # Zeige Login-Formular
 
 
 @app.route('/delete_user', methods=['POST'])
 def delete_user():
-    user_id = request.form['user_id']  # ID aus dem Formular bekommen
-
-    conn = sqlite3.connect('data.db')
-    c = conn.cursor()
-
-    # Benutzer aus der Datenbank löschen
-    c.execute("DELETE FROM users WHERE id = ?", (user_id,))
-    conn.commit()
-    conn.close()
-
+    if 'admin' in session:
+        user_id = request.form['user_id']  # ID aus dem Formular bekommen
+    
+        conn = sqlite3.connect('data.db')
+        c = conn.cursor()
+    
+        # Benutzer aus der Datenbank löschen
+        c.execute("DELETE FROM users WHERE id = ?", (user_id,))
+        conn.commit()
+        conn.close()
+        return redirect(url_for('admin'))
     return redirect(url_for('admin'))  # Zurück zum Admin-Panel
+
 
 
 @app.route('/download/admin_log', methods=['POST', 'GET'])
 def download_file_admin_log():
-    if request.method == 'POST':
-        password = request.form['password']
-        if password == 'test':  # Simple password check
-            path = "admin_login.log"
-            return send_file(path, as_attachment=True)
-        else:
-            return render_template(
-                'admin/download_login_fail.html', route='download_file_admin_log')
-
-    return render_template('admin/download_login.html', route='download_file_admin_log')
+    if 'admin' in session:
+        path = "admin_login.log"
+        return send_file(path, as_attachment=True)
+    else:
+        return redirect(url_for('admin'))
 
 
 @app.route('/download/data_base', methods=['POST', 'GET'])
 def download_file_data_base():
-    if request.method == 'POST':
-        password = request.form['password']
-        if password == 'test':  # Simple password check
-            path = "data.db"
-            return send_file(path, as_attachment=True)
-        else:
-            return render_template(
-                'admin/download_login_fail.html', route='download_file_data_base')
-
-    return render_template('admin/download_login.html', route='download_file_data_base')
+    if 'admin' in session:
+        path = "data.db"
+        return send_file(path, as_attachment=True)
+    else: 
+        return redirect(url_for('admin'))
 
 
 
