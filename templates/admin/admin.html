@@ -49,9 +49,94 @@
         button:hover {
             background-color: #45a049;
         }
+
+
+        .navbar {
+            background-color: #BBBDF6;
+            padding: 15px; /* Padding for the navbar */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%; /* Full width */
+            position: fixed; /* Fixed position to stay at the top */
+            top: 0; /* Align to the top */
+            left: 0; /* Align to the left */
+            z-index: 1000; /* Ensure it stays on top */
+        }
+
+        .navbar ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            flex-grow: 1;
+        }
+
+        .navbar li {
+            display: inline;
+        }
+
+        .navbar a {
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            padding: 10px 15px;
+            border-radius: 3px;
+            transition: background-color 0.3s ease;
+        }
+
+        .navbar a:hover {
+            background-color: #9A9CE6;
+        }
+
+        .navbar a.active {
+            background-color: #8385D0;
+        }
+
+        .navbar-brand {
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            margin-right: auto;
+            padding: 10px 15px; /* Add padding for better spacing */
+        }
+
+        .logout-btn {
+            margin-left: auto;
+            padding: 10px 15px; /* Add padding for better spacing */
+        }
+
+
+
+
+
     </style>
 </head>
+    <nav class="navbar">
+        <!-- Admin Panel Brand (Left) -->
+        <div class="navbar-brand">Admin Panel</div>
+
+        <!-- Center Links -->
+        <ul>
+            <li><a href="admin/dashboard" class="active">Dashboard</a></li>
+            <li><a href="/admin/users">Users</a></li>
+            <li><a href="/admin/downloadpreset">Preset download</a></li>
+            <li><a href="/admin/reports">Reports</a></li>
+        </ul>
+
+        <!-- Logout Button (Right) -->
+        <div class="logout-btn">
+            <a href="/logout">Logout</a>
+        </div>
+    </nav>
+
+
+
+
 <body>
+    <br><br><br>
     <h1>Buchungs Anfragen</h1>
     <table>
         <tr>
@@ -82,7 +167,7 @@
             <td>{{ user[12] }}</td><!-- Status -->
             <td>{{ user[10] }}</td><!-- Preis -->
             <td>
-                <form action="{{ url_for('change_status') }}" method="POST">
+                <form action="{{ url_for('adminchange_status') }}" method="POST">
                     <input type="hidden" name="user_id" value="{{ user[0] }}">
                     <select name="status">
                         <option value="abgesendet" {% if user[11] == 'abgesendet' %}selected{% endif %}>Abgesendet</option>
@@ -94,7 +179,7 @@
                 </form>
             </td>
             <td>
-                <form action="{{ url_for('delete_user') }}" method="POST">
+                <form action="{{ url_for('admin.delete_user') }}" method="POST">
                     <input type="hidden" name="user_id" value="{{ user[0] }}">
                     <button type="submit">Löschen</button>
                 </form>

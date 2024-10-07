@@ -12,6 +12,10 @@ routes = "^2.5.1"
 werkzeug = "^3.0.4"
 flask-mail = "^0.10.0"
 itsdangerous = "^2.2.0"
+pdfplumber = "^0.11.4"
+fpdf2 = "2.8.1"
+fpdf = "^1.7.2"
+auth = "^0.5.3"
 
 [tool.pyright]
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md

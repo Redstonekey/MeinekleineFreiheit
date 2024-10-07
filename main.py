@@ -6,6 +6,8 @@ from datetime import datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+
+import pdfplumber
 import pytz
 from flask import (
     Flask,
@@ -16,12 +18,19 @@ from flask import (
     send_file,
     session,
     url_for,
+    blueprints
 )
+from fpdf import FPDF
 from itsdangerous import BadTimeSignature, SignatureExpired, URLSafeTimedSerializer
 
-app = Flask(__name__)
 
-app.permanent_session_lifetime = timedelta(minutes=120)  
+
+app = Flask(__name__)
+from routes.admin import admin_route
+app.register_blueprint(admin_route)
+
+
+app.permanent_session_lifetime = timedelta(minutes=120)
 # Logger konfigurieren
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -43,8 +52,35 @@ s = URLSafeTimedSerializer(app.secret_key)
 
 
 
+
+def replace_pdf(input_pdf, output_pdf, replacements):
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    # Set UTF-8 encoding for FPDF
+    pdf.set_font('Arial', size=12, style='B',)
+    pdf.add_page()
+
+    with pdfplumber.open(input_pdf) as pdf_reader:
+        for page in pdf_reader.pages:
+            text = page.extract_text()
+            for placeholder, value in replacements.items():
+                # Encode the values before replacing
+                value = value.encode('utf-8')
+                text = text.replace(placeholder, value)
+            # Encode the entire text before passing it to FPDF
+            text = text.encode('utf-8')
+            pdf.set_font("Arial", size=12)
+            pdf.multi_cell(0, 10, text)
+
+    # Output the new PDF
+    pdf.output(output_pdf, 'F')
+
+
+
+
 def generate_confirmation_token(email):
     return s.dumps(email, salt='email-confirm')
+
 
 # Verifikationstoken bestätigen
 def confirm_token(token, expiration=3600):
@@ -56,9 +92,10 @@ def confirm_token(token, expiration=3600):
         return False  # Falscher Token
     return email
 
+
 def send_email(receiver_email, subject, message_body):
     sender_email = 'manfred-eckl@web.de'
-    sender_password = password_email 
+    sender_password = password_email
 
     # E-Mail-Inhalt erstellen
     msg = MIMEMultipart()
@@ -87,12 +124,7 @@ def send_email(receiver_email, subject, message_body):
         print(f"Fehler beim Senden der E-Mail: {e}")
 
 
-
-
 # Beispielwerte für den Aufruf der Funktion
-
-
-
 
 
 # Database setup
@@ -121,7 +153,6 @@ def init_db():
         conn.close()
 
 
-
 @app.route('/test/date-submit', methods=['POST', 'GET'])
 def test_date_submit():
     print("\033[1m" + "\033[31m" + "submit startet" + "\033[0m" + "\033[0m")
@@ -133,6 +164,30 @@ def test_date_submit():
 @app.route('/test/date')
 def test_date():
     return render_template('/test/date.html')
+
+@app.route('/test/pdf', methods=['POST','GET'])
+def test_pdf_render():
+    
+    return render_template('/test/pdf_data.html')
+
+@app.route('/test/pdf_submit', methods=['POST','GET'])
+def test_pdf_render_submit():
+    name = request.form['name']
+    email = request.form['email']
+    von = request.form['von']
+    bis = request.form['bis']
+    preis = request.form['preis']
+    replacements = {
+        "{{name}}": name,
+        "{{email}}": email,
+        "{{von}}": von,
+        "{{bis}}": bis,
+        "{{preis}}": preis,
+    }
+
+    replace_pdf("template.pdf", "output.pdf", replacements)
+    path = "output.pdf"
+    return send_file(path, as_attachment=True)
 
 
 @app.route('/wohnmobile')
@@ -158,7 +213,7 @@ def submit():
     if wohnmobil == "0":
         flash('bitte wohnmobil angeben oder "egal" auswählen')
         return redirect(url_for('buchen'))
-        
+
     if date == "":
         flash('Bitte geben Sie eine gültige Datum ein.')
         return redirect(url_for('buchen'))
@@ -200,8 +255,8 @@ def submit():
         'Eine Bestätigungs-E-Mail wurde gesendet. Bitte überprüfen Sie Ihr Postfach.'
     )
 
-
     return redirect(url_for('buchen'))
+
 
 @app.route('/confirm/<token>')
 def confirm_email(token):
@@ -213,20 +268,19 @@ def confirm_email(token):
 
     conn = sqlite3.connect('data.db')
     c = conn.cursor()
-    c.execute("SELECT id FROM users WHERE email = ?", (email,))
+    c.execute("SELECT id FROM users WHERE email = ?", (email, ))
     user = c.fetchone()
     if user:
-        c.execute("UPDATE users SET status = 'bestätigt' WHERE email = ?", (email,))
+        c.execute("UPDATE users SET status = 'bestätigt' WHERE email = ?",
+                  (email, ))
         conn.commit()
         flash('Ihre E-Mail-Adresse wurde bestätigt. Vielen Dank!', 'success')
     else:
         flash('Die E-Mail-Adresse konnte nicht bestätigt werden.', 'danger')
 
-
-    
     if user:
 
-        c.execute("SELECT * FROM users WHERE email = ?", (email,))
+        c.execute("SELECT * FROM users WHERE email = ?", (email, ))
         data_user = c.fetchone()
         # Daten aus der Datenbank extrahieren
         user_id, name, email, von, bis, date, von1, bis1, telephone, wohnmobil, iban, status = data_user
@@ -234,8 +288,7 @@ def confirm_email(token):
         c.execute(
             """INSERT INTO users (
                 status
-            ) VALUES (?)""",
-            ((status)))
+            ) VALUES (?)""", ((status)))
         conn.commit()
 
         # Aktuelles Jahr für die E-Mail erstellen
@@ -256,15 +309,13 @@ def confirm_email(token):
             'Danke fuer Ihre Anfrage!\n'
             'Wir werden uns innerhalb von 48 Stunden bei Ihnen melden! \n\n'
             f'Ihr Team von Meine kleine Freiheit \n'
-            f'(c) {current_year} Meine kleine Freiheit \n'
-        )
+            f'(c) {current_year} Meine kleine Freiheit \n')
 
         # E-Mail senden
         send_email(receiver_email, subject, message_body)
-        print('debug: ' + receiver_email + subject )
+        print('debug: ' + receiver_email + subject)
     conn.close()
 
-    
     return redirect(url_for('index'))
 
 
@@ -345,127 +396,25 @@ def auth_bank_submit():
         return redirect(url_for('auth_bank'))
 
 
-
 @app.route('/change_status', methods=['POST'])
 def change_status():
     if 'admin' in session:
         user_id = request.form['user_id']
         new_status = request.form['status']
-    
+
         # Connect to the database and update the user's status
         conn = sqlite3.connect('data.db')
         c = conn.cursor()
-        c.execute("UPDATE users SET status = ? WHERE id = ?", (new_status, user_id))
+        c.execute("UPDATE users SET status = ? WHERE id = ?",
+                  (new_status, user_id))
         conn.commit()
         conn.close()
-    
-        return redirect(url_for('admin'))
+
+        return redirect(url_for('admin.admin'))
     else:
-        return redirect(url_for('admin'))
+        return redirect(url_for('admin.admin'))
 
 
-@app.route('/logout')
-def logout():
-    session.pop('admin', None)  # Admin-Status aus der Session entfernen
-    return redirect(url_for('admin'))
-
-
-@app.route('/admin', methods=['GET', 'POST'])
-def admin():
-    # Prüfe, ob der Benutzer bereits authentifiziert ist
-    if 'admin' in session:
-        conn = sqlite3.connect('data.db')
-        c = conn.cursor()
-        c.execute("SELECT * FROM users ORDER BY status")
-        users = c.fetchall()
-        conn.close()
-
-        # Log-Datei einlesen
-        with open('admin_login.log', 'r') as file:
-            logs = file.readlines()
-
-        # Definiere die Mitteleuropäische Zeitzone
-        me_zone = pytz.timezone('Europe/Berlin')
-
-        # Holen Sie sich die aktuelle Zeit in dieser Zeitzone
-        me_time = datetime.now(me_zone)
-
-        # Logge die Zeit
-        logger.info('%s admin logged in',
-                    me_time.strftime('%Y-%m-%d %H:%M:%S'))
-        return render_template('admin/admin.html', users=users, logs=logs)
-
-    if request.method == 'POST':
-        password = request.form['password']
-        if password == 'test':  # Einfacher Passwortcheck
-            session['admin'] = True  # Setze Admin-Status in der Session
-            conn = sqlite3.connect('data.db')
-            c = conn.cursor()
-            c.execute("SELECT * FROM users ORDER BY status")
-            users = c.fetchall()
-            conn.close()
-
-            # Log-Datei einlesen
-            with open('admin_login.log', 'r') as file:
-                logs = file.readlines()
-
-            # Definiere die Mitteleuropäische Zeitzone
-            me_zone = pytz.timezone('Europe/Berlin')
-
-            # Holen Sie sich die aktuelle Zeit in dieser Zeitzone
-            me_time = datetime.now(me_zone)
-
-            # Logge die Zeit
-            logger.info('%s admin logged in',
-                        me_time.strftime('%Y-%m-%d %H:%M:%S'))
-            return render_template('admin/admin.html', users=users, logs=logs)
-        else:
-            me_zone = pytz.timezone('Europe/Berlin')
-
-            # Holen Sie sich die aktuelle Zeit in dieser Zeitzone
-            me_time = datetime.now(me_zone)
-            # Logge die Zeit
-            logger.info('%s admin failed to login',
-                        me_time.strftime('%Y-%m-%d %H:%M:%S'))
-
-            return render_template('admin/admin_login_fail.html')
-
-    return render_template('/admin/admin_login.html')  # Zeige Login-Formular
-
-
-@app.route('/delete_user', methods=['POST'])
-def delete_user():
-    if 'admin' in session:
-        user_id = request.form['user_id']  # ID aus dem Formular bekommen
-    
-        conn = sqlite3.connect('data.db')
-        c = conn.cursor()
-    
-        # Benutzer aus der Datenbank löschen
-        c.execute("DELETE FROM users WHERE id = ?", (user_id,))
-        conn.commit()
-        conn.close()
-        return redirect(url_for('admin'))
-    return redirect(url_for('admin'))  # Zurück zum Admin-Panel
-
-
-
-@app.route('/download/admin_log', methods=['POST', 'GET'])
-def download_file_admin_log():
-    if 'admin' in session:
-        path = "admin_login.log"
-        return send_file(path, as_attachment=True)
-    else:
-        return redirect(url_for('admin'))
-
-
-@app.route('/download/data_base', methods=['POST', 'GET'])
-def download_file_data_base():
-    if 'admin' in session:
-        path = "data.db"
-        return send_file(path, as_attachment=True)
-    else: 
-        return redirect(url_for('admin'))
 
 
 
