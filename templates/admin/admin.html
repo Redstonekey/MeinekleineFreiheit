@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,35 +11,47 @@
             font-family: Arial, sans-serif;
             padding: 20px;
         }
+
         h1 {
             text-align: center;
             color: #333;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin: 20px 0;
         }
-        table, th, td {
+
+        table,
+        th,
+        td {
             border: 1px solid #ddd;
         }
-        th, td {
+
+        th,
+        td {
             padding: 12px;
             text-align: left;
         }
+
         th {
             background-color: #f4f4f4;
         }
+
         tr:nth-child(even) {
             background-color: #f9f9f9;
         }
+
         tr:hover {
             background-color: #f1f1f1;
         }
+
         select {
             padding: 5px;
             font-size: 14px;
         }
+
         button {
             padding: 5px 10px;
             background-color: #4CAF50;
@@ -46,6 +59,7 @@
             border: none;
             cursor: pointer;
         }
+
         button:hover {
             background-color: #45a049;
         }
@@ -53,16 +67,22 @@
 
         .navbar {
             background-color: #BBBDF6;
-            padding: 15px; /* Padding for the navbar */
+            padding: 15px;
+            /* Padding for the navbar */
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            width: 100%; /* Full width */
-            position: fixed; /* Fixed position to stay at the top */
-            top: 0; /* Align to the top */
-            left: 0; /* Align to the left */
-            z-index: 1000; /* Ensure it stays on top */
+            width: 100%;
+            /* Full width */
+            position: fixed;
+            /* Fixed position to stay at the top */
+            top: 0;
+            /* Align to the top */
+            left: 0;
+            /* Align to the left */
+            z-index: 1000;
+            /* Ensure it stays on top */
         }
 
         .navbar ul {
@@ -100,37 +120,34 @@
             font-weight: bold;
             color: white;
             margin-right: auto;
-            padding: 10px 15px; /* Add padding for better spacing */
+            padding: 10px 15px;
+            /* Add padding for better spacing */
         }
 
         .logout-btn {
             margin-left: auto;
-            padding: 10px 15px; /* Add padding for better spacing */
+            padding: 10px 15px;
+            /* Add padding for better spacing */
         }
-
-
-
-
-
     </style>
 </head>
-    <nav class="navbar">
-        <!-- Admin Panel Brand (Left) -->
-        <div class="navbar-brand">Admin Panel</div>
+<nav class="navbar">
+    <!-- Admin Panel Brand (Left) -->
+    <div class="navbar-brand">Admin Panel</div>
 
-        <!-- Center Links -->
-        <ul>
-            <li><a href="admin/dashboard" class="active">Dashboard</a></li>
-            <li><a href="/admin/users">Users</a></li>
-            <li><a href="/admin/downloadpreset">Preset download</a></li>
-            <li><a href="/admin/reports">Reports</a></li>
-        </ul>
+    <!-- Center Links -->
+    <ul>
+        <li><a href="admin/dashboard" class="active">Dashboard</a></li>
 
-        <!-- Logout Button (Right) -->
-        <div class="logout-btn">
-            <a href="/logout">Logout</a>
-        </div>
-    </nav>
+        <li><a href="/admin/downloadpreset">Preset download</a></li>
+        <li><a href="/admin/reports">Reports</a></li>
+    </ul>
+
+    <!-- Logout Button (Right) -->
+    <div class="logout-btn">
+        <a href="/logout">Logout</a>
+    </div>
+</nav>
 
 
 
@@ -162,24 +179,25 @@
             <td>{{ user[7] }}</td> <!-- Bis Datum -->
             <td>{{ user[8] }}</td> <!-- Telefon -->
             <td>{{ user[9] }}</td> <!-- Wohnmobil -->
-                                    
+
             <td>{{ user[11] }}</td> <!-- IBAN -->
             <td>{{ user[12] }}</td><!-- Status -->
             <td>{{ user[10] }}</td><!-- Preis -->
             <td>
-                <form action="{{ url_for('adminchange_status') }}" method="POST">
+                <form action="{{ url_for('change_status') }}" method="POST">
                     <input type="hidden" name="user_id" value="{{ user[0] }}">
                     <select name="status">
-                        <option value="abgesendet" {% if user[11] == 'abgesendet' %}selected{% endif %}>Abgesendet</option>
-                        <option value="bestätigt" {% if user[11] == 'bestätigt' %}selected{% endif %}>Bestätigt</option>
-                        <option value="bezahlt" {% if user[11] == 'bezahlt' %}selected{% endif %}>Bezahlt</option>
-                        <option value="storniert" {% if user[11] == 'storniert' %}selected{% endif %}>Storniert</option>
+                        <option value="abgesendet" {% if user[11]=='abgesendet' %}selected{% endif %}>Abgesendet
+                        </option>
+                        <option value="bestätigt" {% if user[11]=='bestätigt' %}selected{% endif %}>Bestätigt</option>
+                        <option value="bezahlt" {% if user[11]=='bezahlt' %}selected{% endif %}>Bezahlt</option>
+                        <option value="storniert" {% if user[11]=='storniert' %}selected{% endif %}>Storniert</option>
                     </select>
                     <button type="submit">Ändern</button>
                 </form>
             </td>
             <td>
-                <form action="{{ url_for('admin.delete_user') }}" method="POST">
+                <form action="{{ url_for('delete_user') }}" method="POST">
                     <input type="hidden" name="user_id" value="{{ user[0] }}">
                     <button type="submit">Löschen</button>
                 </form>
@@ -195,4 +213,5 @@
         {% endfor %}
     </ul> -->
 </body>
+
 </html>

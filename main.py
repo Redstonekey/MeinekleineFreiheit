@@ -2,6 +2,8 @@ import logging
 import os
 import smtplib
 import sqlite3
+
+import time
 from datetime import datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -18,16 +20,16 @@ from flask import (
     send_file,
     session,
     url_for,
-    blueprints
 )
 from fpdf import FPDF
 from itsdangerous import BadTimeSignature, SignatureExpired, URLSafeTimedSerializer
 
-
+# from routes.admin import admin_route
 
 app = Flask(__name__)
-from routes.admin import admin_route
-app.register_blueprint(admin_route)
+
+
+# app.register_blueprint(admin_route)
 
 
 app.permanent_session_lifetime = timedelta(minutes=120)
@@ -56,24 +58,29 @@ s = URLSafeTimedSerializer(app.secret_key)
 def replace_pdf(input_pdf, output_pdf, replacements):
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
-    # Set UTF-8 encoding for FPDF
-    pdf.set_font('Arial', size=12, style='B',)
+    pdf.set_font('Arial', size=12)
     pdf.add_page()
 
     with pdfplumber.open(input_pdf) as pdf_reader:
         for page in pdf_reader.pages:
             text = page.extract_text()
+
+            # Problematische Zeichen wie Gedankenstriche durch einfache Bindestriche ersetzen
+            text = text.replace('\u2013', '-')  # Ersetzt Gedankenstriche
+
             for placeholder, value in replacements.items():
-                # Encode the values before replacing
-                value = value.encode('utf-8')
+                value = str(value)
                 text = text.replace(placeholder, value)
-            # Encode the entire text before passing it to FPDF
-            text = text.encode('utf-8')
+
             pdf.set_font("Arial", size=12)
             pdf.multi_cell(0, 10, text)
 
-    # Output the new PDF
+    # Speichern der neuen PDF-Datei
     pdf.output(output_pdf, 'F')
+
+
+
+
 
 
 
@@ -151,6 +158,67 @@ def init_db():
         ''')
         conn.commit()
         conn.close()
+
+
+
+
+def init_db_termin():
+    if not os.path.exists('termin.db'):
+        conn = sqlite3.connect('termin.db')
+        c = conn.cursor()
+        c.execute('''
+        CREATE TABLE termin (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            dbid,
+            von1,
+            bis1,
+            firstreminder,
+            secondreminder
+                )
+        ''')
+        conn.commit()
+        conn.close()
+
+def prüfe_termine_periodisch():
+    while True:
+        print('prüfe_termine_periodisch ausgeführt')
+        connection = sqlite3.connect('termin.db')
+        cursor = connection.cursor()
+        jetzt = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        cursor.execute('SELECT * FROM termine WHERE von1 <= ?', (jetzt,))
+        termine = cursor.fetchall()
+        for termin in termine:
+            print(f"Termin {termin[0]} erreicht! Aufgabe: {termin[2]}")
+            # Optional: Termin nach Ausführung entfernen
+            cursor.execute('DELETE FROM termine WHERE id = ?', (termin[0],))
+            connection.commit()
+        connection.close()
+        time.sleep(4)  
+
+
+def lange_funktion(von1, bis1, id):
+    # Strings in datetime-Objekte umwandeln
+    von1_dt = datetime.strptime(von1, '%Y-%m-%d')  # Annahme: Datum ist im Format 'YYYY-MM-DD'
+    bis1_dt = datetime.strptime(bis1, '%Y-%m-%d')
+
+    print('von: ' + von1 + ' bis: ' + bis1 + ' id: ' + str(id))
+
+    first_reminder = von1_dt - timedelta(days=7)
+    second_reminder = von1_dt - timedelta(days=2)
+
+    # Konvertiere das Datum zurück in Strings für die Ausgabe
+    print(first_reminder.strftime('%Y-%m-%d') + ' ---- ' + second_reminder.strftime('%Y-%m-%d'))
+
+    time.sleep(10)  # Beispiel: 10 Sekunden warten
+    print()
+    print()
+    print("Funktion abgeschlossen")
+    print()
+    print()
+    print()
+
+
+
 
 
 @app.route('/test/date-submit', methods=['POST', 'GET'])
@@ -244,6 +312,12 @@ def submit():
         ((name, email, date, von1, bis1, telephone, wohnmobil, preis, status)))
     conn.commit()
     conn.close()
+    last_id = c.lastrowid
+    # print()
+    # print()
+    # print(f'Die ID der neu eingefügten Zeile ist: {last_id}')
+    # print()
+    # print()
 
     token = generate_confirmation_token(email)
     confirm_url = url_for('confirm_email', token=token, _external=True)
@@ -255,7 +329,15 @@ def submit():
         'Eine Bestätigungs-E-Mail wurde gesendet. Bitte überprüfen Sie Ihr Postfach.'
     )
 
+
+
     return redirect(url_for('buchen'))
+
+
+
+
+
+
 
 
 @app.route('/confirm/<token>')
@@ -315,6 +397,8 @@ def confirm_email(token):
         send_email(receiver_email, subject, message_body)
         print('debug: ' + receiver_email + subject)
     conn.close()
+    
+
 
     return redirect(url_for('index'))
 
@@ -410,14 +494,150 @@ def change_status():
         conn.commit()
         conn.close()
 
-        return redirect(url_for('admin.admin'))
+        return redirect(url_for('admin'))
     else:
-        return redirect(url_for('admin.admin'))
+        return redirect(url_for('admin'))
 
+
+
+
+
+
+
+@app.route('/logout')
+def logout():
+    session.pop('admin', None)  # Admin-Status aus der Session entfernen
+    return redirect(url_for('admin'))
+
+
+@app.route('/admin/session', methods=['GET', 'POST'])
+def admin_session_check():
+    if 'admin' in session:
+        return 'Eingeloggt als Admin'
+    else:
+        return 'Nicht eingeloggt'
+
+
+@app.route('/admin/downloadpreset', methods=['GET', 'POST'])
+def admin_users():
+    if 'admin' in session:
+        return render_template('admin/downloadpreset.html')
+    else:
+        return redirect(url_for('admin'))
+
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+    # Prüfe, ob der Benutzer bereits authentifiziert ist
+    if 'admin' in session:
+        conn = sqlite3.connect('data.db')
+        c = conn.cursor()
+        c.execute("SELECT * FROM users ORDER BY status")
+        users = c.fetchall()
+        conn.close()
+
+        # Log-Datei einlesen
+        with open('admin_login.log', 'r') as file:
+            logs = file.readlines()
+
+        # Definiere die Mitteleuropäische Zeitzone
+        me_zone = pytz.timezone('Europe/Berlin')
+
+        # Holen Sie sich die aktuelle Zeit in dieser Zeitzone
+        me_time = datetime.now(me_zone)
+
+        # Logge die Zeit
+        logger.info('%s admin logged in',
+                    me_time.strftime('%Y-%m-%d %H:%M:%S'))
+        return render_template('admin/admin.html', users=users, logs=logs)
+
+    if request.method == 'POST':
+        password = request.form['password']
+        if password == 'test':  # Einfacher Passwortcheck
+            session['admin'] = True  # Setze Admin-Status in der Session
+            conn = sqlite3.connect('data.db')
+            c = conn.cursor()
+            c.execute("SELECT * FROM users ORDER BY status")
+            users = c.fetchall()
+            conn.close()
+
+            # Log-Datei einlesen
+            with open('admin_login.log', 'r') as file:
+                logs = file.readlines()
+
+            # Definiere die Mitteleuropäische Zeitzone
+            me_zone = pytz.timezone('Europe/Berlin')
+
+            # Holen Sie sich die aktuelle Zeit in dieser Zeitzone
+            me_time = datetime.now(me_zone)
+
+            # Logge die Zeit
+            logger.info('%s admin logged in',
+                        me_time.strftime('%Y-%m-%d %H:%M:%S'))
+            return render_template('admin/admin.html', users=users, logs=logs)
+        else:
+            me_zone = pytz.timezone('Europe/Berlin')
+
+            # Holen Sie sich die aktuelle Zeit in dieser Zeitzone
+            me_time = datetime.now(me_zone)
+            # Logge die Zeit
+            logger.info('%s admin failed to login',
+                        me_time.strftime('%Y-%m-%d %H:%M:%S'))
+
+            return render_template('admin/admin_login_fail.html')
+
+    return render_template('/admin/admin_login.html')  # Zeige Login-Formular
+
+
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        password = request.form['password']
+        if password == 'test':  # Einfacher Passwortcheck
+            session['admin'] = True  # Setze Admin-Status in der Session
+    if 'admin' in session:
+        return redirect(url_for('admin'))
+
+    return render_template('admin/admin_login.html')
+
+
+@app.route('/delete_user', methods=['POST'])
+def delete_user():
+    if 'admin' in session:
+        user_id = request.form['user_id']  # ID aus dem Formular bekommen
+
+        conn = sqlite3.connect('data.db')
+        c = conn.cursor()
+
+        # Benutzer aus der Datenbank löschen
+        c.execute("DELETE FROM users WHERE id = ?", (user_id, ))
+        conn.commit()
+        conn.close()
+        return redirect(url_for('admin'))
+    return redirect(url_for('admin'))  # Zurück zum Admin-Panel
+
+
+@app.route('/download/admin_log', methods=['POST', 'GET'])
+def download_file_admin_log():
+    if 'admin' in session:
+        path = "admin_login.log"
+        return send_file(path, as_attachment=True)
+    else:
+        return redirect(url_for('admin'))
+
+
+@app.route('/download/data_base', methods=['POST', 'GET'])
+def download_file_data_base():
+    if 'admin' in session:
+        path = "data.db"
+        return send_file(path, as_attachment=True)
+    else:
+        return redirect(url_for('admin'))
 
 
 
 
 if __name__ == '__main__':
     init_db()
-    app.run(debug=False, host='0.0.0.0', port=5000)
+    init_db_termin()
+    app.run(debug=True, host='0.0.0.0', port=5000)
