@@ -1,218 +1,234 @@
-    <!DOCTYPE html>
-    <html lang="de">
-    <title> Buchen</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-        <!-- Für Apple-Geräte -->
-        <link rel="apple-touch-icon" sizes="180x180" href="static/favicon/apple-touch-icon-180x180.png">
-        <!-- Für Browser -->
-        <link rel="shortcut icon" type="image/x-icon" href="static/favicon/favicon-32x32.ico">
-        <link rel="icon" type="image/png" sizes="96x96" href="static/favicon/favicon-96x96.png">
-        <!-- Für Windows Metro -->
-        <meta name="msapplication-square310x310logo" content="static/favicon/mstile-310x310.png">
-    <header>
+<!DOCTYPE html>
+<html lang="de">
+<title> Buchen</title>
+<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<!-- Für Apple-Geräte -->
+<link rel="apple-touch-icon" sizes="180x180" href="static/favicon/apple-touch-icon-180x180.png">
+<!-- Für Browser -->
+<link rel="shortcut icon" type="image/x-icon" href="static/favicon/favicon-32x32.ico">
+<link rel="icon" type="image/png" sizes="96x96" href="static/favicon/favicon-96x96.png">
+<!-- Für Windows Metro -->
+<meta name="msapplication-square310x310logo" content="static/favicon/mstile-310x310.png">
+<header>
 
-        <div class="header">
-            <a class="logo">Meine kleine Freiheit</a>
-            <div class="header-right">
-              <a href="/">Home</a>
-              <a class="active" href="#Buchen">Buchen</a>
-              <a href="/wohnmobile">Wohnmobile</a>
-            </div>
-          </div>
-    </header>
-
-
-
-        
-    <body style="background-color: rgb(109, 165, 230);"> <br>
-    <h1 class="all"> Kalender:<h3>
-    <br><br><br>
-
-    <form action="{{ url_for('submit') }}" method="POST"  class="buchen">
-      <h1 style="text-align: center;font-size: 10vw">Jetzt Buchen</h1>
-
-      <br>
-
-          <div class="kalender-up-div">
-            <div id="kalender"></div>
-          </div>
-        <br>
-        <br><br>
-        <label for="preis">Gesamtpreis:</label>
-        <input type="text" id="preis" name="preis" readonly>
-      <input type="hidden" id="kalenderInput" name="kalenderInput">
-        
-      <label for="name">Name:</label>
-      <input type="text" id="name" name="name" required>
-      <br>
-      <label for="email">Email:</label>
-      <input type="email" id="email" name="email" required>
-      <br>
-      <label for="telephone">Telephone:</label>
-      <input type="tel" id="telephone" name="telephone" required>
-      <br><br>
-
-        <select id="wohnmobil" name="wohnmobil" class="select">
-            <option id="0" value="0" {% if wohnmobil_id == '0' %}selected{% endif %}>Wähle das Wohnmobil aus:</option>
-            <option id="1" value="1" {% if wohnmobil_id == '1' %}selected{% endif %}>1</option>
-            <option id="2" value="2" {% if wohnmobil_id == '2' %}selected{% endif %}>2</option>
-            <option id="3" value="3" {% if wohnmobil_id == '3' %}selected{% endif %}>3</option>
-            <option id="4" value="Nach absprache (egal)" {% if wohnmobil_id == '4' %}selected{% endif %}>Nach absprache (egal)</option>
-        </select>
-        
-        <a href="/wohnmobile" class="button">mehr über die Wohnmobile erfahren</a>
-
-        <br><br>
-        
-        <button id="submitbutton" type="submit" class="button-form">Anfrage Absenden</button>
-
-
-
-      {% with messages = get_flashed_messages() %}
-          {% if messages %}
-              <ul style="list-style-type: none">
-                  {% for message in messages %}
-                      <li  style="list-style-type: none">{{ message }}</li>
-                  {% endfor %}
-              </ul>
-          {% endif %}
-      {% endwith %}
-      <a id="bestätigung"></a>  
-    </form>
-
-
-        <br>
-
-
-
-        <script>
-        function addbooking() {
-
-          document.getElementById("bestätigung").innerText = "Ihre Anfrage wurde Abgeschickt. Die Verabeitung kann bis zu 48 Stunden dauern";
-        }
-      </script>
+    <div class="header">
+        <a class="logo">Meine kleine Freiheit</a>
+        <div class="header-right">
+            <a href="/">Home</a>
+            <a class="active" href="#Buchen">Buchen</a>
+            <a href="/wohnmobile">Wohnmobile</a>
+        </div>
+    </div>
+</header>
 
 
 
 
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-        <script>
-            const priceRanges = [
-                //tag +1 
-                { start: "2024-09-25", end: "2024-09-25", price: 100, color: "#e3f2fd" },//blau
-                { start: "2024-09-27", end: "2024-09-27", price: 120, color: "#ffecb3" },//gelb
-                { start: "2024-09-30", end: "2024-09-30", price: 140, color: "#c8e6c9" },//grün
-            ];
+<body style="background-color: rgb(109, 165, 230);"> <br>
+    <h1 class="all"><h3>
 
-            const wohnmobilPrices = {
-                1: 1.0,  // Price multiplier for Wohnmobil 1
-                2: 1.2,  // Price multiplier for Wohnmobil 2
-                3: 1.5,  // Price multiplier for Wohnmobil 3
-                4: 1.1   // Price multiplier for Wohnmobil "Nach Absprache"
-            };
 
-            // Helper function to check if a date falls within a range
-            function isDateInRange(date, start, end) {
-                const dateObj = new Date(date);
-                const startDate = new Date(start);
-                const endDate = new Date(end);
-                return dateObj >= startDate && dateObj <= endDate;
-            }
+            <form action="{{ url_for('submit') }}" method="POST" class="buchen">
+                <h1 style="text-align: center;font-size: 10vw">Jetzt Buchen</h1>
 
-            // Function to calculate price based on selected dates
-            function calculatePrice(startDate, endDate) {
-                let totalPrice = 0;
+                <br>
 
-                // Create a date iterator to loop over each day in the range
-                let currentDate = new Date(startDate);
-                while (currentDate <= endDate) {
-                    const dateString = currentDate.toISOString().split('T')[0];
+                <div class="kalender-up-div">
+                    <div id="kalender"></div>
+                </div>
+                <div id="legende" style="margin-top: 20px; text-align: center;">
+                    <h4>Preisinformation:</h4>
+                    <ul style="list-style-type: none; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
+                        {% for preis in preise %}
+                        <li style="display: flex; align-items: center;">
+                            <span style="width: 16px; height: 16px; border-radius: 50%; background-color: {{ preis[4] }}; display: inline-block; margin-right: 10px;"></span>
+                            <span>€{{ preis[3] }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
 
-                    // Find the price for the current date
-                    priceRanges.forEach(range => {
-                        if (isDateInRange(dateString, range.start, range.end)) {
-                            totalPrice += range.price;
-                        }
-                    });
+                <br>
+                <br><br>
+                <label for="preis">Gesamtpreis:</label>
+                <input type="text" id="preis" name="preis" readonly>
+                <input type="hidden" id="kalenderInput" name="kalenderInput">
 
-                    // Move to the next day
-                    currentDate.setDate(currentDate.getDate() + 1);
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
+                <br>
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+                <br>
+                <label for="telephone">Telephone:</label>
+                <input type="tel" id="telephone" name="telephone" required>
+                <br><br>
+
+                <select id="wohnmobil" name="wohnmobil" class="select">
+                    <option id="0" value="0" {% if wohnmobil_id=='0' %}selected{% endif %}>Wähle das Wohnmobil aus:
+                    </option>
+                    <option id="1" value="1" {% if wohnmobil_id=='1' %}selected{% endif %}>1</option>
+                    <option id="2" value="2" {% if wohnmobil_id=='2' %}selected{% endif %}>2</option>
+                    <option id="3" value="3" {% if wohnmobil_id=='3' %}selected{% endif %}>3</option>
+                    <option id="4" value="Nach absprache (egal)" {% if wohnmobil_id=='4' %}selected{% endif %}>Nach
+                        absprache (egal)</option>
+                </select>
+
+                <a href="/wohnmobile" class="button">mehr über die Wohnmobile erfahren</a>
+
+                <br><br>
+
+                <button id="submitbutton" type="submit" class="button-form">Anfrage Absenden</button>
+
+
+
+                {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                <ul style="list-style-type: none">
+                    {% for message in messages %}
+                    <li style="list-style-type: none">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+                {% endwith %}
+                <a id="bestätigung"></a>
+            </form>
+
+
+            <br>
+
+
+
+            <script>
+                function addbooking() {
+
+                    document.getElementById("bestätigung").innerText = "Ihre Anfrage wurde Abgeschickt. Die Verabeitung kann bis zu 48 Stunden dauern";
+                }
+            </script>
+
+
+
+
+            <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+            <script>
+                console.log('hello world')
+                const priceRanges = [
+
+                    {% for preis in preise %}
+                        {start: "20{{ preis[1] }}", end: "20{{ preis[2] }}", price: {{ preis[3] }}, color: "{{ preis[4] }}"},
+
+
+                    {% endfor %}
+                ];
+
+                const wohnmobilPrices = {
+                    1: 1.0,  // Price multiplier for Wohnmobil 1
+                    2: 1.2,  // Price multiplier for Wohnmobil 2
+                    3: 1.5,  // Price multiplier for Wohnmobil 3
+                    4: 1.1   // Price multiplier for Wohnmobil "Nach Absprache"
+                };
+
+                // Helper function to check if a date falls within a range
+                function isDateInRange(date, start, end) {
+                    const dateObj = new Date(date);
+                    const startDate = new Date(start);
+                    const endDate = new Date(end);
+                    return dateObj >= startDate && dateObj <= endDate;
                 }
 
-                const wohnmobilId = document.getElementById("wohnmobil").value;
-                const wohnmobilMultiplier = wohnmobilPrices[wohnmobilId] || 1.0;
+                // Function to calculate price based on selected dates
+                function calculatePrice(startDate, endDate) {
+                    let totalPrice = 0;
 
-                // Return total price adjusted for selected wohnmobil
-                return totalPrice * wohnmobilMultiplier;
-            }
+                    // Create a date iterator to loop over each day in the range
+                    let currentDate = new Date(startDate);
+                    while (currentDate <= endDate) {
+                        const dateString = currentDate.toISOString().split('T')[0];
 
-            // Flatpickr initialization with price calculation
-            flatpickr("#kalender", {
-                inline: true,
-                showMonths: 2,
-                mode: "range",
-                dateFormat: "Y-m-d",
-                minDate: "today",
-                onChange: function(selectedDates, dateStr, instance) {
-                    // Ensure both start and end date are selected
-                    if (selectedDates.length === 2) {
-                        const startDate = selectedDates[0];
-                        const endDate = selectedDates[1];
+                        // Find the price for the current date
+                        priceRanges.forEach(range => {
+                            if (isDateInRange(dateString, range.start, range.end)) {
+                                totalPrice += range.price;
+                            }
+                        });
 
-                        // Calculate total price for the date range
-                        const totalPrice = calculatePrice(startDate, endDate);
-                        document.getElementById('kalenderInput').value = dateStr;
-
-                        // Füge den Gesamtpreis in das Input-Feld ein
-                        document.getElementById('preis').value = `€${totalPrice.toFixed(2)}`;
+                        // Move to the next day
+                        currentDate.setDate(currentDate.getDate() + 1);
                     }
-                },
-                onDayCreate: function(dObj, dStr, fp, dayElem) {
-                    const date = dayElem.dateObj.toISOString().split('T')[0];
 
-                    priceRanges.forEach(range => {
-                        if (isDateInRange(date, range.start, range.end)) {
-                            dayElem.classList.add('price-day');
-                            dayElem.style.backgroundColor = range.color;
-                        }
-                    });
+                    const wohnmobilId = document.getElementById("wohnmobil").value;
+                    const wohnmobilMultiplier = wohnmobilPrices[wohnmobilId] || 1.0;
+
+                    // Return total price adjusted for selected wohnmobil
+                    return totalPrice * wohnmobilMultiplier;
                 }
-            });
-        </script>
-    <br><br><br>
-        <style>
-            /* Tooltip for prices on hover */
-            .flatpickr-day.price-day[data-price]:hover::after {
-                content: attr(data-price);
-                position: absolute;
-                bottom: -28px;
-                left: 50%;
-                transform: translateX(-50%);
-                background-color: #333;
-                color: #fff;
-                padding: 5px;
-                border-radius: 5px;
-                white-space: nowrap;
-                font-size: 12px;
-                z-index: 10;
-            }
 
-            /* Styling for today’s date */
-            .flatpickr-day.today {
-                border: 2px solid #03a9f4;
-            }
+                // Flatpickr initialization with price calculation
+                flatpickr("#kalender", {
+                    inline: true,
+                    showMonths: 2,
+                    mode: "range",
+                    dateFormat: "Y-m-d",
+                    minDate: "today",
+                    onChange: function (selectedDates, dateStr, instance) {
+                        // Ensure both start and end date are selected
+                        if (selectedDates.length === 2) {
+                            const startDate = selectedDates[0];
+                            const endDate = selectedDates[1];
 
-            /* Styling for selected day */
-            .flatpickr-day.selected {
-                background-color: #0288d1 !important;
-                color: white;
-            }
+                            // Calculate total price for the date range
+                            const totalPrice = calculatePrice(startDate, endDate);
+                            document.getElementById('kalenderInput').value = dateStr;
 
-        </style>
+                            // Füge den Gesamtpreis in das Input-Feld ein
+                            document.getElementById('preis').value = `€${totalPrice.toFixed(2)}`;
+                        }
+                    },
+                    onDayCreate: function (dObj, dStr, fp, dayElem) {
+                        const date = dayElem.dateObj.toISOString().split('T')[0];
 
-    <footer>
-      <div>
-          <p class="klein">&copy; 2024 Meine kleine Freiheit. Alle Rechte vorbehalten.</p>
-      </div>
-    </footer>
+                        priceRanges.forEach(range => {
+                            if (isDateInRange(date, range.start, range.end)) {
+                                dayElem.classList.add('price-day');
+                                dayElem.style.backgroundColor = range.color;
+                            }
+                        });
+                    }
+                });
+            </script>
+            <br><br><br>
+            <style>
+                /* Tooltip for prices on hover */
+                .flatpickr-day.price-day[data-price]:hover::after {
+                    content: attr(data-price);
+                    position: absolute;
+                    bottom: -28px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background-color: #333;
+                    color: #fff;
+                    padding: 5px;
+                    border-radius: 5px;
+                    white-space: nowrap;
+                    font-size: 12px;
+                    z-index: 10;
+                }
+
+                /* Styling for today’s date */
+                .flatpickr-day.today {
+                    border: 2px solid #03a9f4;
+                }
+
+                /* Styling for selected day */
+                .flatpickr-day.selected {
+                    background-color: #0288d1 !important;
+                    color: white;
+                }
+            </style>
+
+            <footer>
+                <div>
+                    <p class="klein">&copy; 2024 Meine kleine Freiheit. Alle Rechte vorbehalten.</p>
+                </div>
+            </footer>

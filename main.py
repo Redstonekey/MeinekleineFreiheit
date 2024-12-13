@@ -2,12 +2,10 @@ import logging
 import os
 import smtplib
 import sqlite3
-
 import time
 from datetime import datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-
 
 import pdfplumber
 import pytz
@@ -24,12 +22,7 @@ from flask import (
 from fpdf import FPDF
 from itsdangerous import BadTimeSignature, SignatureExpired, URLSafeTimedSerializer
 
-# from routes.admin import admin_route
-
 app = Flask(__name__)
-
-
-# app.register_blueprint(admin_route)
 
 
 app.permanent_session_lifetime = timedelta(minutes=120)
@@ -51,8 +44,6 @@ current_year = now.year
 password_email = os.environ['password']
 
 s = URLSafeTimedSerializer(app.secret_key)
-
-
 
 
 def replace_pdf(input_pdf, output_pdf, replacements):
@@ -77,12 +68,6 @@ def replace_pdf(input_pdf, output_pdf, replacements):
 
     # Speichern der neuen PDF-Datei
     pdf.output(output_pdf, 'F')
-
-
-
-
-
-
 
 
 def generate_confirmation_token(email):
@@ -136,7 +121,24 @@ def send_email(receiver_email, subject, message_body):
 
 # Database setup
 def init_db():
+    if not os.path.exists('preise.db'):
+        print('new price db got created')
+        conn = sqlite3.connect('preise.db')
+        c = conn.cursor()
+        # Tabelle erstellen, wenn sie nicht existiert
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS preise (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                von TEXT NOT NULL,
+                bis TEXT NOT NULL,
+                preis REAL NOT NULL,
+                farbe TEXT NOT NULL
+            )
+        ''')
+        conn.commit()
+        conn.close()
     if not os.path.exists('data.db'):
+        print('new user db got created')
         conn = sqlite3.connect('data.db')
         c = conn.cursor()
         c.execute('''
@@ -160,67 +162,6 @@ def init_db():
         conn.close()
 
 
-
-
-def init_db_termin():
-    if not os.path.exists('termin.db'):
-        conn = sqlite3.connect('termin.db')
-        c = conn.cursor()
-        c.execute('''
-        CREATE TABLE termin (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            dbid,
-            von1,
-            bis1,
-            firstreminder,
-            secondreminder
-                )
-        ''')
-        conn.commit()
-        conn.close()
-
-def prüfe_termine_periodisch():
-    while True:
-        print('prüfe_termine_periodisch ausgeführt')
-        connection = sqlite3.connect('termin.db')
-        cursor = connection.cursor()
-        jetzt = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        cursor.execute('SELECT * FROM termine WHERE von1 <= ?', (jetzt,))
-        termine = cursor.fetchall()
-        for termin in termine:
-            print(f"Termin {termin[0]} erreicht! Aufgabe: {termin[2]}")
-            # Optional: Termin nach Ausführung entfernen
-            cursor.execute('DELETE FROM termine WHERE id = ?', (termin[0],))
-            connection.commit()
-        connection.close()
-        time.sleep(4)  
-
-
-def lange_funktion(von1, bis1, id):
-    # Strings in datetime-Objekte umwandeln
-    von1_dt = datetime.strptime(von1, '%Y-%m-%d')  # Annahme: Datum ist im Format 'YYYY-MM-DD'
-    bis1_dt = datetime.strptime(bis1, '%Y-%m-%d')
-
-    print('von: ' + von1 + ' bis: ' + bis1 + ' id: ' + str(id))
-
-    first_reminder = von1_dt - timedelta(days=7)
-    second_reminder = von1_dt - timedelta(days=2)
-
-    # Konvertiere das Datum zurück in Strings für die Ausgabe
-    print(first_reminder.strftime('%Y-%m-%d') + ' ---- ' + second_reminder.strftime('%Y-%m-%d'))
-
-    time.sleep(10)  # Beispiel: 10 Sekunden warten
-    print()
-    print()
-    print("Funktion abgeschlossen")
-    print()
-    print()
-    print()
-
-
-
-
-
 @app.route('/test/date-submit', methods=['POST', 'GET'])
 def test_date_submit():
     print("\033[1m" + "\033[31m" + "submit startet" + "\033[0m" + "\033[0m")
@@ -233,12 +174,14 @@ def test_date_submit():
 def test_date():
     return render_template('/test/date.html')
 
-@app.route('/test/pdf', methods=['POST','GET'])
+
+@app.route('/test/pdf', methods=['POST', 'GET'])
 def test_pdf_render():
-    
+
     return render_template('/test/pdf_data.html')
 
-@app.route('/test/pdf_submit', methods=['POST','GET'])
+
+@app.route('/test/pdf_submit', methods=['POST', 'GET'])
 def test_pdf_render_submit():
     name = request.form['name']
     email = request.form['email']
@@ -266,6 +209,47 @@ def wohnmobile():
 @app.route('/bild')
 def bild():
     return render_template('/test.html')
+
+@app.route('/admin/price')
+def price_admin_view():
+    conn = sqlite3.connect('preise.db')
+    c = conn.cursor()
+    c.execute('SELECT * FROM preise')
+    preise = c.fetchall()
+    conn.close()
+    return render_template('/admin/price.html', preis=preise)
+
+@app.route('/admin/price/delete/<int:price_id>', methods=['POST'])
+def delete_price(price_id):
+    conn = sqlite3.connect('preise.db')
+    c = conn.cursor()
+    c.execute('DELETE FROM preise WHERE id = ?', (price_id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('price_admin_view'))
+
+
+
+@app.route('/preis_submit', methods=['POST'])
+def preis_submit():
+    # Daten aus dem Formular abrufen
+    von = request.form['von']
+    bis = request.form['bis']
+    preis = request.form['price']
+    farbe = request.form['farbe']
+    # Preis und Farbe in die Datenbank speichern
+    if von and bis and preis and farbe:
+        conn = sqlite3.connect('preise.db')
+        c = conn.cursor()
+        c.execute('''
+            INSERT INTO preise (von, bis, preis, farbe) VALUES (?, ?, ?, ?)
+        ''', (von, bis, preis, farbe))
+        conn.commit()
+        conn.close()
+        return redirect(url_for('price_admin_view'))
+    
+    return "Fehler: Alle Felder müssen ausgefüllt werden!", 400 
+
 
 
 @app.route('/submit', methods=['POST'])
@@ -312,32 +296,19 @@ def submit():
         ((name, email, date, von1, bis1, telephone, wohnmobil, preis, status)))
     conn.commit()
     conn.close()
-    last_id = c.lastrowid
-    # print()
-    # print()
-    # print(f'Die ID der neu eingefügten Zeile ist: {last_id}')
-    # print()
-    # print()
 
     token = generate_confirmation_token(email)
     confirm_url = url_for('confirm_email', token=token, _external=True)
     subject = 'Bitte bestaetigen Sie Ihre E-Mail-Adresse'
-    message_body = f'Hallo {name}, bitte bestaetigen Sie Ihre E-Mail-Adresse, indem Sie auf den folgenden Link klicken: {confirm_url}'
+    message_body = f"""Hallo {name}, bitte bestaetigen Sie Ihre E-Mail-Adresse, indem Sie auf den folgenden Link klicken: 
+    {confirm_url}"""
     send_email(email, subject, message_body)
 
     flash(
         'Eine Bestätigungs-E-Mail wurde gesendet. Bitte überprüfen Sie Ihr Postfach.'
     )
 
-
-
     return redirect(url_for('buchen'))
-
-
-
-
-
-
 
 
 @app.route('/confirm/<token>')
@@ -365,12 +336,12 @@ def confirm_email(token):
         c.execute("SELECT * FROM users WHERE email = ?", (email, ))
         data_user = c.fetchone()
         # Daten aus der Datenbank extrahieren
-        user_id, name, email, von, bis, date, von1, bis1, telephone, wohnmobil, iban, status = data_user
+        user_id, name, email, von, bis, date, von1, bis1, telephone, wohnmobil, iban, status, *extra = data_user
         status = 'email bestätigt'
         c.execute(
             """INSERT INTO users (
-                status
-            ) VALUES (?)""", ((status)))
+                name, email, von, bis, date, von1, bis1, telephone, wohnmobil, iban, status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (name, email, von, bis, date, von1, bis1, telephone, wohnmobil, iban, status))
         conn.commit()
 
         # Aktuelles Jahr für die E-Mail erstellen
@@ -397,8 +368,6 @@ def confirm_email(token):
         send_email(receiver_email, subject, message_body)
         print('debug: ' + receiver_email + subject)
     conn.close()
-    
-
 
     return redirect(url_for('index'))
 
@@ -439,7 +408,12 @@ def home():
 @app.route('/buchen')
 def buchen():
     wohnmobil_id = request.args.get('wohnmobil', default='0', type=str)
-    return render_template('buchen.html', wohnmobil_id=wohnmobil_id)
+    conn = sqlite3.connect('preise.db')
+    c = conn.cursor()
+    c.execute('SELECT * FROM preise')
+    preise = c.fetchall()
+    conn.close()
+    return render_template('buchen.html', wohnmobil_id=wohnmobil_id, preise=preise)
 
 
 @app.route('/auth/bank', methods=('GET', 'POST'))
@@ -497,11 +471,6 @@ def change_status():
         return redirect(url_for('admin'))
     else:
         return redirect(url_for('admin'))
-
-
-
-
-
 
 
 @app.route('/logout')
@@ -635,9 +604,6 @@ def download_file_data_base():
         return redirect(url_for('admin'))
 
 
-
-
 if __name__ == '__main__':
     init_db()
-    init_db_termin()
     app.run(debug=True, host='0.0.0.0', port=5000)

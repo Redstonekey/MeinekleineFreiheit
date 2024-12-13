@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin price</title>
+</head>
+<body>
+  <nav class="navbar">
+      <!-- Admin Panel Brand (Left) -->
+      <div class="navbar-brand">Admin Panel</div>
+
+      <!-- Center Links -->
+      <ul>
+          <li><a href="/admin" >Dashboard</a></li>
+
+          <li><a href="#" >Preset download</a></li>
+          <li><a href="/admin/price"class="active">Preise</a></li>
+      </ul>
+
+      <!-- Logout Button (Right) -->
+      <div class="logout-btn">
+          <a href="/logout">Logout</a>
+      </div>
+  </nav>
+  <br><br><br>
+<h1>Change the prices:</h1>
+  <form class="form" action="{{ url_for('preis_submit') }}" method="POST">
+      <div>
+          <label for="von">Von:</label>
+          <input type="text" id="von" name="von">
+      </div>
+      <div>
+          <label for="bis">Bis:</label>
+          <input type="text" id="bis" name="bis">
+      </div>
+      <div>
+          <label for="price">Preis (€)</label>
+          <input type="number" id="price" name="price">
+      </div>
+    <div>
+        <label for="farbe">Farbe wählen:</label>
+        <input type="color" id="farbe" name="farbe" value="#c8e6c9">
+    </div>
+
+      <div>
+          <button type="submit">Absenden</button>
+      </div>
+  </form><br>
+
+
+
+
+
+
+
+  <table>
+      <tr>
+          <th>Von</th>
+          <th>Bis</th>
+          <th>Preis</th>
+          <th>Farbe</th>
+          <th>Delete</th>
+      </tr>
+      {% for preis in preis %}
+      <tr>
+          <td>{{ preis[1] }}</td> <!-- Von -->
+          <td>{{ preis[2] }}</td> <!-- Bis -->
+          <td>{{ preis[3] }}</td> <!-- Preis -->
+          <td style="background-color: {{ preis[4] }};">{{ preis[4] }}</td>
+          <td>
+              <form method="POST" action="{{ url_for('delete_price', price_id=preis[0]) }}" style="display:inline;">
+                  <button type="submit">Löschen</button>
+              </form>
+          </td>
+      </tr>
+      {% endfor %}
+  </table>
+
+
+
+
+
+
+
+  
+
+
+  <!-- Include Flatpickr JS -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+  <script>
+    // Initialize Flatpickr for the "von" input
+    const vonPicker = flatpickr("#von", {
+        enableTime: false,
+        dateFormat: "y-m-d",
+        onChange: function(selectedDates) {
+            // Get the selected date in "von"
+            const minDate = selectedDates[0];
+
+            // Update the "bis" picker with the minimum date
+            bisPicker.set("minDate", minDate);
+        }
+    });
+
+    // Initialize Flatpickr for the "bis" input
+    const bisPicker = flatpickr("#bis", {
+        enableTime: false,
+        dateFormat: "y-m-d"
+    });
+  </script>
+</body>
+</html>
+
+
+<style>
+  input[type="color"] {
+      width: 50px;
+      height: 30px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 0;
+  }
+
+  /* Optional: Ein Rahmen, der den Color Picker visuell hervorhebt */
+  input[type="color"]:focus {
+      border-color: #4CAF50;  /* Beispiel: Grüner Rand bei Fokus */
+  }
+
+    .form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    .form label {
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #333;
+    }
+
+    .form input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.3s;
+    }
+
+    .form input:focus {
+        border-color: #4CAF50;
+    }
+
+    .form button {
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
+    }
+
+    .form button:hover {
+        background-color: #45a049;
+    }
+</style>
+<style>
+
+    body {
+        background-color: #f5f5f5;
+        font-family: Arial, sans-serif;
+        padding: 20px;
+    }
+
+    h1 {
+        text-align: center;
+        color: #333;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+    }
+
+    table,
+    th,
+    td {
+        border: 1px solid #ddd;
+    }
+
+    th,
+    td {
+        padding: 12px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #f4f4f4;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    select {
+        padding: 5px;
+        font-size: 14px;
+    }
+
+    button {
+        padding: 5px 10px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #45a049;
+    }
+
+
+    .navbar {
+        background-color: #BBBDF6;
+        padding: 15px;
+        /* Padding for the navbar */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        /* Full width */
+        position: fixed;
+        /* Fixed position to stay at the top */
+        top: 0;
+        /* Align to the top */
+        left: 0;
+        /* Align to the left */
+        z-index: 1000;
+        /* Ensure it stays on top */
+    }
+
+    .navbar ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        flex-grow: 1;
+    }
+
+    .navbar li {
+        display: inline;
+    }
+
+    .navbar a {
+        text-decoration: none;
+        color: white;
+        font-weight: bold;
+        padding: 10px 15px;
+        border-radius: 3px;
+        transition: background-color 0.3s ease;
+    }
+
+    .navbar a:hover {
+        background-color: #9A9CE6;
+    }
+
+    .navbar a.active {
+        background-color: #8385D0;
+    }
+
+    .navbar-brand {
+        font-size: 20px;
+        font-weight: bold;
+        color: white;
+        margin-right: auto;
+        padding: 10px 15px;
+        /* Add padding for better spacing */
+    }
+
+    .logout-btn {
+        margin-left: auto;
+        padding: 10px 15px;
+        /* Add padding for better spacing */
+    }
+</style>

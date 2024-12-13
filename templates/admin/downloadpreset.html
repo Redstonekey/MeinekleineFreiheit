@@ -1,12 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
+  <style>
+      body {
+          background-color: #f5f5f5;
+          font-family: Arial, sans-serif;
+          padding: 20px;
+      }
 
+      h1 {
+          text-align: center;
+          color: #333;
+      }
+
+      table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 20px 0;
+      }
+
+      table,
+      th,
+      td {
+          border: 1px solid #ddd;
+      }
+
+      th,
+      td {
+          padding: 12px;
+          text-align: left;
+      }
+
+      th {
+          background-color: #f4f4f4;
+      }
+
+      tr:nth-child(even) {
+          background-color: #f9f9f9;
+      }
+
+      tr:hover {
+          background-color: #f1f1f1;
+      }
+
+      select {
+          padding: 5px;
+          font-size: 14px;
+      }
+
+      button {
+          padding: 5px 10px;
+          background-color: #4CAF50;
+          color: white;
+          border: none;
+          cursor: pointer;
+      }
+
+      button:hover {
+          background-color: #45a049;
+      }
+
+
+      .navbar {
+          background-color: #BBBDF6;
+          padding: 15px;
+          /* Padding for the navbar */
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          width: 100%;
+          /* Full width */
+          position: fixed;
+          /* Fixed position to stay at the top */
+          top: 0;
+          /* Align to the top */
+          left: 0;
+          /* Align to the left */
+          z-index: 1000;
+          /* Ensure it stays on top */
+      }
+
+      .navbar ul {
+          list-style-type: none;
+          margin: 0;
+          padding: 0;
+          display: flex;
+          justify-content: center;
+          flex-grow: 1;
+      }
+
+      .navbar li {
+          display: inline;
+      }
+
+      .navbar a {
+          text-decoration: none;
+          color: white;
+          font-weight: bold;
+          padding: 10px 15px;
+          border-radius: 3px;
+          transition: background-color 0.3s ease;
+      }
+
+      .navbar a:hover {
+          background-color: #9A9CE6;
+      }
+
+      .navbar a.active {
+          background-color: #8385D0;
+      }
+
+      .navbar-brand {
+          font-size: 20px;
+          font-weight: bold;
+          color: white;
+          margin-right: auto;
+          padding: 10px 15px;
+          /* Add padding for better spacing */
+      }
+
+      .logout-btn {
+          margin-left: auto;
+          padding: 10px 15px;
+          /* Add padding for better spacing */
+      }
+  </style>
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Preset - admin</title>
 </head>
+  <nav class="navbar">
+      <!-- Admin Panel Brand (Left) -->
+      <div class="navbar-brand">Admin Panel</div>
+
+      <!-- Center Links -->
+      <ul>
+          <li><a href="/admin" >Dashboard</a></li>
+
+          <li><a href="#" class="active">Preset download</a></li>
+          <li><a href="/admin/price">Preise</a></li>
+      </ul>
+
+      <!-- Logout Button (Right) -->
+      <div class="logout-btn">
+          <a href="/logout">Logout</a>
+      </div>
+  </nav>
+
 
 <body>
   <div class="container">
@@ -26,8 +168,6 @@
 
 <style>
   * {
-    margin: 0;
-    padding: 0;
     box-sizing: border-box;
     text-decoration: none;
   }
