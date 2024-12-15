@@ -170,6 +170,7 @@ def test_date_submit():
     return redirect(url_for('test_date'))
 
 
+
 @app.route('/test/date')
 def test_date():
     return render_template('/test/date.html')
@@ -204,7 +205,9 @@ def test_pdf_render_submit():
 @app.route('/wohnmobile')
 def wohnmobile():
     return render_template('/Wohnmobile.html')
-
+@app.route('/impressum')
+def impressum():
+    return render_template('/impressum.html')
 
 @app.route('/bild')
 def bild():
