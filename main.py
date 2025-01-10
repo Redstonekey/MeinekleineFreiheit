@@ -41,7 +41,8 @@ app.secret_key = 'onetwothree'  # Needed for session management
 now = datetime.now()
 current_year = now.year
 
-password_email = os.environ['password']
+password_email = 'your email password here'
+sender_email_address = 'your email addres here'
 
 s = URLSafeTimedSerializer(app.secret_key)
 
@@ -86,7 +87,7 @@ def confirm_token(token, expiration=3600):
 
 
 def send_email(receiver_email, subject, message_body):
-    sender_email = 'manfred-eckl@web.de'
+    sender_email = sender_email_address
     sender_password = password_email
 
     # E-Mail-Inhalt erstellen
